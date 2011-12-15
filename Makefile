@@ -2,7 +2,7 @@
 PATH_INCLUDE   := /usr/include
 PATH_INSTALL   := /usr/lib
 
-LIBNAME	:= ceigs
+LIBNAME	:= libceigs
 VERSION	:= 1.0
 
 CFLAGS   := -O0 -g3 -fPIC -W -Wall -Wextra -Wunused -Wshadow -Wpointer-arith -Wmissing-prototypes -Winline -Wcast-align -Wmissing-declarations -Wredundant-decls -Wno-long-long -Wcast-align
@@ -17,7 +17,7 @@ all: $(LIBNAME) test
 help:
 	@echo "Valid targets are:"
 	@echo "          all - Makes the library and test application"
-	@echo "        ceigs - Makes the ceigs library"
+	@echo "     libceigs - Makes the ceigs library"
 	@echo "         test - Compiles the test application"
 	@echo "      install - Installs the library"
 	@echo "    uninstall - Uninstalls the library"
