@@ -159,19 +159,30 @@ typedef enum EigsMode_e {
  *
  * This function can generate auxiliary data structures for the backend driver
  * if necessary. The only input parameter is the size of the matrix.
+ *
+ * @sa EigsFreedrv_t
  */
 typedef void* (*EigsInitdrv_t)( int n );
 /**
  * @brief Prototype for driver clean up.
  *
- * This function
+ * This function should free all data allocated by it's reciprocal driver
+ * initialization function. The only input parameter is the pointer returned
+ * by the driver initialization function.
+ *
+ * @sa EigsInitdrv_t
  */
 typedef void (*EigsFreedrv_t)( void* data );
 /**
  * @brief Prototype for a dsaupd_ driver.
+ *
+ * These drivers are the core of the reverse communication interface used by
+ * ARPACK. Their objective is to provide an implementation to manipulate the
+ * data type used by the matrices with ARPACK. For exact consultation please
+ * refer to the ARPACK user guide.
  */
 typedef int (*EigsDsdrv_t)( int ido, int n, double *workd, const int *ipntr,
-      const void *data_A, const void *data_B, void *extra );
+      const void *data_A, const void *data_M, void *extra );
 
 /**
  * @brief Driver backend.
@@ -241,7 +252,7 @@ void eigs_optsDefault( EigsOpts_t *opts );
  * @sa eigs_optsDefault
  */
 int eigs( int n, int nev, double *lambda, double *vec,
-      const void *data_A, const void *data_B,
+      const void *data_A, const void *data_M,
       EigsOrder_t order, EigsMode_t mode, const EigsDriverGroup_t *drvlist,
       const EigsOpts_t *opts );
 
