@@ -1,0 +1,37 @@
+
+OVERVIEW
+
+This is a simple C frontend for ARPACK. This allows easy access to
+calculating a subset of eigenvectors and eigenvalues of sparse matrices.
+Specifically it can solve two problems:
+ - Av = vd
+ - Av = Mvd
+Where A, M are sparse matrices, v is the subset of
+eigenvectors and d is the diagonal matrix of eigenvalues.
+
+
+INSTALLING
+
+To install run:
+
+# make install
+
+You will have to be root to install it unless you change the path in the Makefile.
+
+
+DOCUMENTATION
+
+To generate full documentation use the command:
+
+$ make docs
+
+Which will generate a pdf containing the full documentation in the directory.
+
+
+CHANGELOG
+
+- Version 1.0, December 2011
+   - Initial Revision.
+   - Support for EIGS_MODE_I_REGULAR with default driver backend.
+   - Support for EIGS_MODE_G_REGINVERSE with default driver backend.
+
