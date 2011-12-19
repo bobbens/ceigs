@@ -101,6 +101,8 @@
  *
  * @section Changelog
  *
+ * - Version 1.1, (unreleased)
+ *    - Invert the eigenvector/value order to match octave/matlab's eigs(...) function.
  * - Version 1.0, December 2011
  *    - Initial Revision.
  *    - Support for EIGS_MODE_I_REGULAR with default driver backend.
