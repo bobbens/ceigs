@@ -117,7 +117,7 @@ void eigs_optsDefault( EigsOpts_t *opts )
 int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const void *data_B,
       EigsOrder_t order, EigsMode_t mode, const EigsDriverGroup_t *drvlist, const EigsOpts_t *opts )
 {
-   int i, j;
+   int i, j, k;
    int ido, ncv, ldv, lworkl, info, ierr, rvec, ret;
    double *resid, *v, *workd, *workl, *d;
    double tol, sigma;
@@ -301,14 +301,18 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
          fprintf( stderr, "No shifts could be applied during implicit Arnoldi update, try increasing NCV.\n\n" );
 
       /* Eigenvalues. */
-      for (i=0; i<nev; i++)
-         lambda[i] = d[i];
+      for (i=0; i<nev; i++) {
+         k = nev-i-1;
+         lambda[i] = d[k];
+      }
 
       /* Eigenvectors. */
       if (rvec) {
-         for (i=0; i<nev; i++)
+         for (i=0; i<nev; i++) {
+            k = nev-i-1;
             for (j=0; j<n; j++)
-               vec[ i*n+j ] = v[ i*n+j ];
+               vec[ i*n+j ] = v[ k*n + j ];
+         }
       }
    }
 
