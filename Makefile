@@ -5,7 +5,7 @@ PATH_INSTALL   := /usr/lib
 LIBNAME	:= libceigs
 VERSION	:= 1.0
 
-CFLAGS   := -O0 -g3 -fPIC -W -Wall -Wextra -Wunused -Wshadow -Wpointer-arith -Wmissing-prototypes -Winline -Wcast-align -Wmissing-declarations -Wredundant-decls -Wno-long-long -Wcast-align
+CFLAGS   := -O3 -fPIC -W -Wall -Wextra -Wunused -Wshadow -Wpointer-arith -Wmissing-prototypes -Winline -Wcast-align -Wmissing-declarations -Wredundant-decls -Wno-long-long -Wcast-align
 LDFLAGS	:= -lparpack -lcsparse -lcxsparse
 
 OBJS		:= ceigs.o
