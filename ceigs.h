@@ -103,6 +103,9 @@
  *
  * - Version 1.1, (unreleased)
  *    - Invert the eigenvector/value order to match octave/matlab's eigs(...) function.
+ *    - Support for EIGS_MODE_I_SHIFTINVERT with default driver backend.
+ *    - Support for EIGS_MODE_G_SHIFTINVERT with default driver backend.
+ *    - All default drivers now use LU factorization.
  * - Version 1.0, December 2011
  *    - Initial Revision.
  *    - Support for EIGS_MODE_I_REGULAR with default driver backend.
@@ -141,8 +144,10 @@ typedef enum EigsOrder_e {
 /**
  * @brief Mode of operation of the ARPACK backend.
  *
- * Note that currently only EIGS_MODE_I_REGULAR and EIGS_MODE_G_REGINVERSE are
- * implemented in the default csparse backend.
+ * @note Note that currently neither EIGS_MODE_G_BUCKLING nor EIGS_MODE_G_CAYLEY are
+ * implemented yet.
+ *
+ * @note By default all the CSPARSE drivers use LU factorization.
  */
 typedef enum EigsMode_e {
    /* For use in solving Av = vd */
@@ -160,9 +165,9 @@ typedef enum EigsMode_e {
  * @brief Options to use.
  */
 typedef struct EigsOpts_s {
-   int iters;  /**< Maximum iterations during algorithm execution. Default is 3000. */
-   double tol; /**< Tolerance to use. A value of 0.0 indicates to use maximum machine precision. Default is 0.0. */
-   double sigma; /**< Value used for some of the backends. */
+   int iters;     /**< Maximum iterations during algorithm execution. Default is 3000. */
+   double tol;    /**< Tolerance to use. A value of 0.0 indicates to use maximum machine precision. Default is 0.0. */
+   double sigma;  /**< Value used for the shift-invert modes to choose where to calculate eigenvalues near. Default is 0.0. */
 } EigsOpts_t;
 
 
