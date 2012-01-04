@@ -29,11 +29,18 @@ static int compute_error( double *derr, double *verr, int n, int nev,
    *derr = d;
    *verr = v;
 
-   if (d > 1e-10) {
+   if (d > 1e-8) {
       fprintf( stderr, "Eigenvalues do not match (err=%.3e)!\n", d );
+      fprintf( stderr, "   gt:  " );
+      for (i=0; i<nev; i++)
+         fprintf( stderr, " %+.3e,", d2[i] );
+      fprintf( stderr, "\n   res: " );
+      for (i=0; i<nev; i++)
+         fprintf( stderr, " %+.3e,", d1[i] );
+      fprintf( stderr, "\n" );
       ret = 1;
    }
-   if (v > 1e-10) {
+   if (v > 1e-8) {
       fprintf( stderr, "Eigenvectors do not match (err=%.3e)!\n", v );
       ret = 1;
    }
@@ -61,11 +68,11 @@ int main( int argc, char *argv[] )
    A = cs_compress( T );
    cs_spfree( T );
 
-   cs *B = cs_spalloc( n, n, n, 1, 1 );
+   cs *M = cs_spalloc( n, n, n, 1, 1 );
    for (i=0; i<n; i++)
-      cs_entry( B, i, i, ((double) i+1) );
-   T = B;
-   B = cs_compress( T );
+      cs_entry( M, i, i, ((double) i+1) );
+   T = M;
+   M = cs_compress( T );
    cs_spfree( T );
 
    nev = 3; /* The number of values to calculate */
@@ -75,7 +82,6 @@ int main( int argc, char *argv[] )
    vec    = calloc( nev*n, sizeof(double) );
 
    /* We'll calculate Av=vd first. */
-   eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_LM, EIGS_MODE_I_REGULAR, NULL, NULL );
    const double l1[] = {
       9.953394836768425012e+04,
       6.141970787731389692e+02,
@@ -86,10 +92,12 @@ int main( int argc, char *argv[] )
       1.144048975579629000e-02, 7.047849876936132518e-02, 2.608572146544452797e-01, 5.735162007046817889e-01, 7.404068272277498641e-01, -2.230074162262173088e-01,
       -6.001339802578492533e-02, -1.212174333083029382e-01, 2.355345514097250681e-01, 7.372730538926840493e-01, -6.091134665651405378e-01, 1.078769199806836054e-01
    };
+   eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_LM, EIGS_MODE_I_REGULAR, NULL, NULL );
+   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l1, v1 );
+   eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_SM, EIGS_MODE_I_SHIFTINVERT, NULL, NULL ); /* No ide awhy we have to use SM instead of LM here... */
    ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l1, v1 );
 
    /* Now calculate Av = Mvd. */
-   eigs( n, nev, lambda, vec, A, B, EIGS_ORDER_SM, EIGS_MODE_G_REGINVERSE, NULL, NULL );
    const double l2[] = {
       5.412473132453965441e-01,
       -2.984619993926789297e-02,
@@ -100,13 +108,16 @@ int main( int argc, char *argv[] )
       1.726984061702139805e-01, -4.276016740271261218e-01, 4.046988721759349761e-01, -1.660254170588852940e-01, 2.403141630938674528e-02, -8.615466920500390005e-05,
       -8.976873680085523111e-02, -1.079480371895823465e-01, 1.522288623684176501e-01, 3.417208372352413259e-01, -2.885499220770642581e-01, 5.118158320569202169e-02
    };
+   eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_SM, EIGS_MODE_G_REGINVERSE, NULL, NULL );
+   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l2, v2 );
+   eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_LM, EIGS_MODE_G_SHIFTINVERT, NULL, NULL ); /* No idea why we have to use LM instead of SM here... */
    ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l2, v2 );
 
    /* Clean up. */
    free( lambda );
    free( vec );
    cs_spfree( A );
-   cs_spfree( B );
+   cs_spfree( M );
 
    if (ret)
       fprintf( stderr, "ceigs test failed!!\n" );
