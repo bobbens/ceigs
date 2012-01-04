@@ -273,6 +273,7 @@ void eigs_optsDefault( EigsOpts_t *opts )
    opts->iters = 3000;
    opts->tol   = 0.0; /* Maximum computer precision. */
    opts->sigma = 0.0; /* Sigma shift value. */
+   opts->ncv   = 0;   /* Autosets based on nev. */
 }
 
 
