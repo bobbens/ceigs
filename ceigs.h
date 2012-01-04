@@ -157,6 +157,16 @@ typedef enum EigsMode_e {
 
 
 /**
+ * @brief Options to use.
+ */
+typedef struct EigsOpts_s {
+   int iters;  /**< Maximum iterations during algorithm execution. Default is 3000. */
+   double tol; /**< Tolerance to use. A value of 0.0 indicates to use maximum machine precision. Default is 0.0. */
+   double sigma; /**< Value used for some of the backends. */
+} EigsOpts_t;
+
+
+/**
  * @brief Prototype for driver initialization.
  *
  * This function can generate auxiliary data structures for the backend driver
@@ -164,7 +174,8 @@ typedef enum EigsMode_e {
  *
  * @sa EigsFreedrv_t
  */
-typedef void* (*EigsInitdrv_t)( int n );
+typedef void* (*EigsInitdrv_t)( int n, const void *data_A, const void *data_M,
+      const EigsOpts_t *opts );
 /**
  * @brief Prototype for driver clean up.
  *
@@ -174,7 +185,7 @@ typedef void* (*EigsInitdrv_t)( int n );
  *
  * @sa EigsInitdrv_t
  */
-typedef void (*EigsFreedrv_t)( void* data );
+typedef void (*EigsFreedrv_t)( void* data, const EigsOpts_t *opts );
 /**
  * @brief Prototype for a dsaupd_ driver.
  *
@@ -208,15 +219,6 @@ typedef struct EigsDriverGroup_s {
    EigsDriver_t driver5; /**< Driver for EIGS_MODE_G_BUCKLING. */
    EigsDriver_t driver6; /**< Driver for EIGS_MODE_G_CAYLEY. */
 } EigsDriverGroup_t;
-
-
-/**
- * @brief Options to use.
- */
-typedef struct EigsOpts_s {
-   int iters;  /**< Maximum iterations during algorithm execution. Default is 3000. */
-   double tol; /**< Tolerance to use. A value of 0.0 indicates to use maximum machine precision. Default is 0.0. */
-} EigsOpts_t;
 
 
 /**
