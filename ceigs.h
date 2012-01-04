@@ -106,6 +106,7 @@
  *    - Support for EIGS_MODE_I_SHIFTINVERT with default driver backend.
  *    - Support for EIGS_MODE_G_SHIFTINVERT with default driver backend.
  *    - All default drivers now use LU factorization.
+ *    - Added number of Lanczos vectors to use as a parameter.
  * - Version 1.0, December 2011
  *    - Initial Revision.
  *    - Support for EIGS_MODE_I_REGULAR with default driver backend.
@@ -168,6 +169,7 @@ typedef struct EigsOpts_s {
    int iters;     /**< Maximum iterations during algorithm execution. Default is 3000. */
    double tol;    /**< Tolerance to use. A value of 0.0 indicates to use maximum machine precision. Default is 0.0. */
    double sigma;  /**< Value used for the shift-invert modes to choose where to calculate eigenvalues near. Default is 0.0. */
+   int ncv;       /**< Number of Lanczos vectors to computer (0 to autoset). Default is 0. */
 } EigsOpts_t;
 
 

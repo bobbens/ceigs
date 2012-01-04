@@ -341,14 +341,17 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    tol   = opts_use->tol; /* Sets the tolerance; tol<=0 specifies 
                              machine precision */
    resid = malloc( n * sizeof(double) );
-   ncv   = 2*nev; /* The largest number of basis vectors that will
-                     be used in the Implicitly Restarted Arnoldi
-                     Process.  Work per major iteration is
-                     proportional to N*NCV*NCV. */
-   if (ncv < 20)
-      ncv = 20;
-   if (ncv > n)
-      ncv = n;
+   ncv   = opts_use->ncv;
+   if (ncv <= 0) {
+      ncv   = 4*nev; /* The largest number of basis vectors that will
+                        be used in the Implicitly Restarted Arnoldi
+                        Process.  Work per major iteration is
+                        proportional to N*NCV*NCV. */
+      if (ncv < 20)
+         ncv = 20;
+      if (ncv > n)
+         ncv = n;
+   }
 
    ldv = n;
    v   = malloc( ldv*ncv * sizeof(double) );
