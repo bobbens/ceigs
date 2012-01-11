@@ -67,12 +67,12 @@ static cs_lu_data_t* cs_lu_data_init( const cs *A )
    lud      = malloc( sizeof(cs_lu_data_t) );
    assert( lud != NULL );
    lud->S   = cs_sqr( order, A, 0 );
-   lud->N   = cs_lu( A, lud->S, tol );
-   lud->x   = cs_malloc( A->n, sizeof(double) );
-   lud->n   = A->n;
    assert( lud->S != NULL );
+   lud->N   = cs_lu( A, lud->S, tol );
    assert( lud->N != NULL );
+   lud->x   = cs_malloc( A->n, sizeof(double) );
    assert( lud->x != NULL );
+   lud->n   = A->n;
    return lud;
 }
 static void cs_lu_data_free( cs_lu_data_t *lud )
@@ -287,10 +287,10 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    char *which, *bmat;
    int iparam[11], ipntr[11];
    int *sel;
-   void *drv_data;
    const EigsOpts_t *opts_use;
    EigsOpts_t opts_default;
    const EigsDriver_t *drv;
+   void *drv_data = NULL;
 
    /* Choose options to use. */
    if (opts == NULL) {
@@ -342,6 +342,7 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    tol   = opts_use->tol; /* Sets the tolerance; tol<=0 specifies 
                              machine precision */
    resid = malloc( n * sizeof(double) );
+   assert( resid != NULL );
    ncv   = opts_use->ncv;
    if (ncv <= 0) {
       ncv   = 4*nev; /* The largest number of basis vectors that will
@@ -356,6 +357,7 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
 
    ldv = n;
    v   = malloc( ldv*ncv * sizeof(double) );
+   assert( v != NULL );
 
    iparam[0] = 1;   /* Specifies the shift strategy (1->exact). */
    iparam[1] = 0;   /* Not referenced. */
@@ -421,6 +423,8 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    lworkl = ncv*(ncv+8); /* Length of the workl array */
    workd  = malloc( 3*n *    sizeof(double) );
    workl  = malloc( lworkl * sizeof(double) );
+   assert( workd != NULL );
+   assert( workl != NULL );
 
    info   = 0; /* Passes convergence information out of the iteration
                   routine. */
@@ -428,6 +432,9 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    sel = malloc( ncv   * sizeof(int) );
    d   = malloc( 2*ncv * sizeof(double) ); /* This vector will return the eigenvalues from
                              the second routine, dseupd. */
+   assert( sel != NULL );
+   assert( d != NULL );
+
    rvec = (vec != NULL); /* Specifies that eigenvectors should not be calculated */
    ret  = 0; /* Default return value. */
 
@@ -441,8 +448,6 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    /* Initialize driver. */
    if (drv->init != NULL)
       drv_data = drv->init( n, data_A, data_M, opts_use );
-   else
-      drv_data = NULL;
 
    /* Main loop using ARPACK. */
    do {
