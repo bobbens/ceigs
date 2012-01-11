@@ -136,14 +136,19 @@ static void* eigs_dsdrv2_init_cs( int n, const void *data_A, const void *data_M,
    int i;
    cs_lu_data_t *lud;
 
+   /* Create Temoporary B matrix. */
    B = cs_spalloc( n, n, n, 1, 1 );
    for (i=0; i<n; i++)
       cs_entry( B, i, i, 1 );
    T = B;
    B = cs_compress( T );
    cs_spfree( T );
+
+   /* C = A - sigma B */
    C = cs_add( A, B, 1.0, -opts->sigma );
    cs_spfree( B );
+
+   /* Factorize C and keep factorization. */
    lud = cs_lu_data_init( C );
    cs_spfree( C );
    return lud;
@@ -219,8 +224,9 @@ static void* eigs_dsdrv4_init_cs( int n, const void *data_A, const void *data_M,
    cs *C;
    cs_lu_data_t *lud;
 
-   C = cs_add( A, M, 1.0, -opts->sigma );
-   lud = cs_lu_data_init( C );
+   /* C = A - sigma M */
+   C   = cs_add( A, M, 1.0, -opts->sigma );
+   lud = cs_lu_data_init( C ); /* Only care about factorization. */
    cs_spfree( C );
    return lud;
 }
