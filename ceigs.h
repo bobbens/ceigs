@@ -250,7 +250,7 @@ void eigs_optsDefault( EigsOpts_t *opts );
 /**
  * @brief Main interface to the ARPACK eigen vector calculator.
  *
- * This either solves the problem "Ax=lx" or "Ax=Blx".
+ * This either solves the problem "Ax=lx" or "Ax=Mlx".
  *
  * For the algorithm to work the following conditions must be met:
  *  - nev   <= n
@@ -266,12 +266,12 @@ void eigs_optsDefault( EigsOpts_t *opts );
  *                    ARPACK will not calculate the eigenvectors and only compute
  *                    eigenvalues.
  *    @param[in] data_A A matrix data.
- *    @param[in] data_B B matrix data if applicable.
+ *    @param[in] data_M M matrix data if applicable.
  *    @param[in] order Ordering to find eigenvalues in.
  *    @param[in] mode Mode of operation.
  *    @param[in] drvlist List of drivers to use or NULL to use defaults.
  *    @param[in] opts Options to use or NULL to use defaults.
- *
+ *    @return 0 on success.
  * @sa eigs_optsDefault
  */
 int eigs( int n, int nev, double *lambda, double *vec,
