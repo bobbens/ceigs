@@ -343,12 +343,7 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    if (drvlist == NULL)
       drvlist = &drv_default;
 
-   ido   = 0; /* Initialization of the reverse communication
-                 parameter. */
-   tol   = opts_use->tol; /* Sets the tolerance; tol<=0 specifies 
-                             machine precision */
-   resid = malloc( n * sizeof(double) );
-   assert( resid != NULL );
+   /* Set number of Lanczos vectors to use. */
    ncv   = opts_use->ncv;
    if (ncv <= 0) {
       ncv   = 4*nev; /* The largest number of basis vectors that will
@@ -360,6 +355,22 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
       if (ncv > n)
          ncv = n;
    }
+   /* Sanity checks. */
+   if (nev > n) {
+      fprintf( stderr, "Condition \"nev <= n\" is not met.\n" );
+      return -1;
+   }
+   if (nev+1 > ncv) {
+      fprintf( stderr, "Condition \"nev+1 <= ncv\" is not met.\n" );
+      return -2;
+   }
+
+   ido   = 0; /* Initialization of the reverse communication
+                 parameter. */
+   tol   = opts_use->tol; /* Sets the tolerance; tol<=0 specifies 
+                             machine precision */
+   resid = malloc( n * sizeof(double) );
+   assert( resid != NULL );
 
    ldv = n;
    v   = malloc( ldv*ncv * sizeof(double) );

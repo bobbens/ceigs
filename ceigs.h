@@ -166,10 +166,18 @@ typedef enum EigsMode_e {
  * @brief Options to use.
  */
 typedef struct EigsOpts_s {
-   int iters;     /**< Maximum iterations during algorithm execution. Default is 3000. */
-   double tol;    /**< Tolerance to use. A value of 0.0 indicates to use maximum machine precision. Default is 0.0. */
-   double sigma;  /**< Value used for the shift-invert modes to choose where to calculate eigenvalues near. Default is 0.0. */
-   int ncv;       /**< Number of Lanczos vectors to computer (0 to autoset). Default is 0. */
+   int iters;     /**< Maximum iterations during algorithm execution.
+                       Default is 3000. */
+   double tol;    /**< Tolerance to use. A value of 0.0 indicates to use
+                       maximum machine precision.
+                       Default is 0.0. */
+   double sigma;  /**< Value used for the shift-invert modes to choose where to
+                       calculate eigenvalues near.
+                       Default is 0.0. */
+   int ncv;       /**< Number of Lanczos vectors to computer (0 to autoset).
+                       This value must be larger than one plus the number of
+                       eigenvalues being calculated.
+                       Default is 0. */
 } EigsOpts_t;
 
 
@@ -243,6 +251,10 @@ void eigs_optsDefault( EigsOpts_t *opts );
  * @brief Main interface to the ARPACK eigen vector calculator.
  *
  * This either solves the problem "Ax=lx" or "Ax=Blx".
+ *
+ * For the algorithm to work the following conditions must be met:
+ *  - nev   <= n
+ *  - nev+1 <= ncv
  *
  * @note When using the default drivers, matrix A and matrix B should be
  *       be compressed csparse matrices.
