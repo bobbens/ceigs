@@ -248,14 +248,16 @@ typedef struct EigsDriverGroup_s {
  * factorization and finally QR factorization if the previous fails.
  * This driver is the default.
  *
- * @note For Cholesky factorization to work, the A matrix must be Hermitian and
- *       positive definite.
+ * @note For Cholesky factorization to work, the A matrix must be Hermitian,
+ *       positive definite, and non-singular.
  */
 extern const EigsDriverGroup_t eigs_drv_cholesky;
 /**
  * @brief Driver group using LU factorization.
  *
- * This driver is default and works for any type of matrix.
+ * This driver will fall back to QR factorization if LU factorization fails.
+ *
+ * @note For LU factorization to work, the A matrix must be non-singular.
  */
 extern const EigsDriverGroup_t eigs_drv_lu; 
 /**
