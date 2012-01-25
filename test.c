@@ -42,15 +42,21 @@ static int compute_error( double *derr, double *verr, int n, int nev,
    }
    if (v > 1e-8) {
       fprintf( stderr, "Eigenvectors do not match (err=%.3e)!\n", v );
+      fprintf( stderr, "   gt:  " );
+      for (i=0; i<n; i++)
+         fprintf( stderr, " %+.3e,", v2[i] );
+      fprintf( stderr, "\n   res: " );
+      for (i=0; i<n; i++)
+         fprintf( stderr, " %+.3e,", v1[i] );
+      fprintf( stderr, "\n" );
       ret = 1;
    }
    return ret;
 }
 
-int main( int argc, char *argv[] )
+
+static int test_lu (void)
 {
-   (void) argc;
-   (void) argv;
    int n, nev, i, j;
    double *lambda, *vec;
    double derr, verr;
@@ -92,6 +98,7 @@ int main( int argc, char *argv[] )
       1.144048975579629000e-02, 7.047849876936132518e-02, 2.608572146544452797e-01, 5.735162007046817889e-01, 7.404068272277498641e-01, -2.230074162262173088e-01,
       -6.001339802578492533e-02, -1.212174333083029382e-01, 2.355345514097250681e-01, 7.372730538926840493e-01, -6.091134665651405378e-01, 1.078769199806836054e-01
    };
+   /* LU. */
    eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_LM, EIGS_MODE_I_REGULAR, NULL, NULL );
    ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l1, v1 );
    eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_SM, EIGS_MODE_I_SHIFTINVERT, NULL, NULL ); /* No ide awhy we have to use SM instead of LM here... */
@@ -118,6 +125,102 @@ int main( int argc, char *argv[] )
    free( vec );
    cs_spfree( A );
    cs_spfree( M );
+
+   return ret;
+}
+
+
+static int test_cholesky (void)
+{
+   int n, nev, i;
+   double *lambda, *vec;
+   double derr, verr;
+   int ret = 0;
+
+   n = 5; /* The order of the matrix */
+
+   cs *T;
+   cs *A = cs_spalloc( n, n, n*n, 1, 1 );
+   cs_entry( A, 0, 0, 1. );
+   for (i=1; i<n; i++) {
+      cs_entry( A, i, 0, -1. );
+      cs_entry( A, 0, i, -1. );
+      cs_entry( A, i, i, (double)(i+1) );
+   }
+   cs_entry( A, 3, 2, 1. );
+   cs_entry( A, 4, 2, 1. );
+   cs_entry( A, 2, 3, 1. );
+   cs_entry( A, 2, 4, 1. );
+   cs_entry( A, 3, 4, 2. );
+   cs_entry( A, 4, 3, 2. );
+   T = A;
+   A = cs_compress( T );
+   cs_spfree( T );
+
+   /* This is just diagonl matrix. */
+   cs *M = cs_spalloc( n, n, n, 1, 1 );
+   for (i=0; i<n; i++)
+      cs_entry( M, i, i, ((double) i+1) );
+   T = M;
+   M = cs_compress( T );
+   cs_spfree( T );
+
+   nev = 3; /* The number of values to calculate */
+
+   /* Allocate eigenvalue and eigenvectors. */
+   lambda = calloc( nev,   sizeof(double) );
+   vec    = calloc( nev*n, sizeof(double) );
+
+   /* We'll calculate Av=vd first. */
+   const double l1[] = {
+      7.487499930704983875,
+      2.828934782420331917,
+      2.396468531986137407
+   };
+   const double v1[] = {
+       0.255653564112301834, -0.046588349401483709, -0.340340358589111491, -0.572071344927197578, -0.699552426545247852,
+      -0.329043545565872841,  0.396947446945257187,  0.644073931218181128,  0.114210542611589028, -0.553432735358693084,
+      -0.254721696675916931,  0.642476454309929612, -0.080823372416091277, -0.600264971072408837,  0.394322723000606445
+   };
+   eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_LM, EIGS_MODE_I_REGULAR, &eigs_drv_cholesky, NULL );
+   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l1, v1 );
+   eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_SM, EIGS_MODE_I_SHIFTINVERT, &eigs_drv_cholesky, NULL ); /* No ide awhy we have to use SM instead of LM here... */
+   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l1, v1 );
+
+   /* Now calculate Av = Mvd. */
+   const double l2[] = {
+      0.787763146961615424,
+      0.551298200038270458,
+      0.006381569440378952
+      };
+   const double v2[] = {
+       0.054618487217833120,  0.128673428850631683, -0.472625518114244914,  0.159718406288255427,  0.195825738820187861,
+      -0.010411926777927509, -0.011602278817263223, -0.050107150349627372,  0.362488031421858536, -0.305450452541293993,
+      -0.739873616712546589, -0.372312748011245365, -0.190339145144644672, -0.103589190311946536, -0.068910978382554500
+   };
+   eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_SM, EIGS_MODE_G_REGINVERSE, &eigs_drv_cholesky, NULL );
+   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l2, v2 );
+   eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_LM, EIGS_MODE_G_SHIFTINVERT, &eigs_drv_cholesky, NULL ); /* No idea why we have to use LM instead of SM here... */
+   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l2, v2 );
+
+   /* Clean up. */
+   free( lambda );
+   free( vec );
+   cs_spfree( A );
+   cs_spfree( M );
+
+   return ret;
+}
+
+
+int main( int argc, char *argv[] )
+{
+   (void) argc;
+   (void) argv;
+   int ret = 0;
+
+   ret |= test_lu();
+   ret |= test_cholesky();
 
    if (ret)
       fprintf( stderr, "ceigs test failed!!\n" );

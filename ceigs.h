@@ -105,8 +105,9 @@
  *    - Invert the eigenvector/value order to match octave/matlab's eigs(...) function.
  *    - Support for EIGS_MODE_I_SHIFTINVERT with default driver backend.
  *    - Support for EIGS_MODE_G_SHIFTINVERT with default driver backend.
- *    - All default drivers now use LU factorization.
  *    - Added number of Lanczos vectors to use as a parameter.
+ *    - Added driver that uses LU factorization (default).
+ *    - Added driver that uses Cholesky factorization.
  * - Version 1.0, December 2011
  *    - Initial Revision.
  *    - Support for EIGS_MODE_I_REGULAR with default driver backend.
@@ -234,6 +235,21 @@ typedef struct EigsDriverGroup_s {
    EigsDriver_t driver5; /**< Driver for EIGS_MODE_G_BUCKLING. */
    EigsDriver_t driver6; /**< Driver for EIGS_MODE_G_CAYLEY. */
 } EigsDriverGroup_t;
+
+
+/**
+ * @brief Driver group using LU factorization.
+ *
+ * This driver is default.
+ */
+extern const EigsDriverGroup_t eigs_drv_lu; 
+/**
+ * @brief Driver group using Cholesky factorization.
+ *
+ * @note For Cholesky factorization to work, the A matrix must be Hermitian and
+ *       positive definite.
+ */
+extern const EigsDriverGroup_t eigs_drv_cholesky;
 
 
 /**
