@@ -8,7 +8,7 @@ VERSION	:= 1.0
 CFLAGS   := -O3 -fPIC -W -Wall -Wextra -Wunused -Wshadow -Wpointer-arith -Wmissing-prototypes -Winline -Wcast-align -Wmissing-declarations -Wredundant-decls -Wno-long-long -Wcast-align
 LDFLAGS	:= -larpack -lcsparse -lcxsparse
 
-OBJS		:= ceigs.o ceigs_lu.o ceigs_cholesky.o
+OBJS		:= ceigs.o ceigs_lu.o ceigs_cholesky.o ceigs_qr.o
 
 .PHONY: all $(LIBNAME) install clean uninstall docs help
 

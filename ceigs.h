@@ -110,6 +110,7 @@
  *    - Added number of Lanczos vectors to use as a parameter.
  *    - Added driver that uses LU factorization (default).
  *    - Added driver that uses Cholesky factorization.
+ *    - Added driver that uses QR factorization.
  * - Version 1.0, December 2011
  *    - Initial Revision.
  *    - Support for EIGS_MODE_I_REGULAR with default driver backend.
@@ -252,6 +253,12 @@ extern const EigsDriverGroup_t eigs_drv_lu;
  *       positive definite.
  */
 extern const EigsDriverGroup_t eigs_drv_cholesky;
+/**
+ * @brief Driver group using QR factorization.
+ *
+ * @note This works with least-squares so the A matrix can be singular.
+ */
+extern const EigsDriverGroup_t eigs_drv_qr;
 
 
 /**
@@ -273,6 +280,12 @@ void eigs_optsDefault( EigsOpts_t *opts );
  * For the algorithm to work the following conditions must be met:
  *  - nev   <= n
  *  - nev+1 <= ncv
+ *
+ * Various alternative dirvers are provided, these include:
+ *  - eigs_drv_lu: LU factorization driver. Works for non-singular matrices.
+ *  - eigs_drv_cholesky: Cholesky factorization driver. Works for non-singular
+ *                       symmetric positive definite matrices.
+ *  - eigs_drv_qr: QR factorization driver. Always works, but has worse precision.
  *
  * @note When using the default drivers, matrix A and matrix B should be
  *       be compressed csparse matrices.

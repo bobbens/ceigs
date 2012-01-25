@@ -10,9 +10,10 @@
 
 #define POW2(x)      ((x)*(x))
 
-static int compute_error( double *derr, double *verr, int n, int nev,
+static int compute_error( const char *name,
+      double *derr, double *verr, int n, int nev,
       const double *d1, const double *v1,
-      const double *d2, const double *v2 )
+      const double *d2, const double *v2, double tol )
 {
    int i, j;
    double d, v, sign;
@@ -29,7 +30,9 @@ static int compute_error( double *derr, double *verr, int n, int nev,
    *derr = d;
    *verr = v;
 
-   if (d > 1e-8) {
+   if ((d > tol) || (v > tol))
+      fprintf( stderr, "%s failed!\n", name );
+   if (d > tol) {
       fprintf( stderr, "Eigenvalues do not match (err=%.3e)!\n", d );
       fprintf( stderr, "   gt:  " );
       for (i=0; i<nev; i++)
@@ -40,7 +43,7 @@ static int compute_error( double *derr, double *verr, int n, int nev,
       fprintf( stderr, "\n" );
       ret = 1;
    }
-   if (v > 1e-8) {
+   if (v > tol) {
       fprintf( stderr, "Eigenvectors do not match (err=%.3e)!\n", v );
       fprintf( stderr, "   gt:  " );
       for (i=0; i<n; i++)
@@ -58,7 +61,7 @@ static int compute_error( double *derr, double *verr, int n, int nev,
 /**
  * @brief Tests the LU backend driver for symmetric matrices.
  */
-static int test_lu (void)
+static int test_lu_qr (void)
 {
    int n, nev, i, j;
    double *lambda, *vec;
@@ -103,9 +106,14 @@ static int test_lu (void)
    };
    /* LU. */
    eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_LM, EIGS_MODE_I_REGULAR, NULL, NULL );
-   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l1, v1 );
+   ret |= compute_error( "LU test Av=vd regular (dsdrv1)", &derr, &verr, n, nev, lambda, vec, l1, v1, 1e-8 );
    eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_SM, EIGS_MODE_I_SHIFTINVERT, NULL, NULL ); /* No ide awhy we have to use SM instead of LM here... */
-   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l1, v1 );
+   ret |= compute_error( "LU test AV=vd shiftinvert (dsdrv2)", &derr, &verr, n, nev, lambda, vec, l1, v1, 1e-8 );
+   /* QR */
+   eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_LM, EIGS_MODE_I_REGULAR, &eigs_drv_qr, NULL );
+   ret |= compute_error( "QR test Av=vd regular (dsdrv1)", &derr, &verr, n, nev, lambda, vec, l1, v1, 1e-5 );
+   eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_SM, EIGS_MODE_I_SHIFTINVERT, &eigs_drv_qr, NULL ); /* No ide awhy we have to use SM instead of LM here... */
+   ret |= compute_error( "QR test AV=vd shiftinvert (dsdrv2)", &derr, &verr, n, nev, lambda, vec, l1, v1, 1e-5 );
 
    /* Now calculate Av = Mvd. */
    const double l2[] = {
@@ -118,10 +126,16 @@ static int test_lu (void)
       1.726984061702139805e-01, -4.276016740271261218e-01, 4.046988721759349761e-01, -1.660254170588852940e-01, 2.403141630938674528e-02, -8.615466920500390005e-05,
       -8.976873680085523111e-02, -1.079480371895823465e-01, 1.522288623684176501e-01, 3.417208372352413259e-01, -2.885499220770642581e-01, 5.118158320569202169e-02
    };
+   /* LU */
    eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_SM, EIGS_MODE_G_REGINVERSE, NULL, NULL );
-   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l2, v2 );
+   ret |= compute_error( "LU test Av=Mvd regular (dsdrv3)", &derr, &verr, n, nev, lambda, vec, l2, v2, 1e-8 );
    eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_LM, EIGS_MODE_G_SHIFTINVERT, NULL, NULL ); /* No idea why we have to use LM instead of SM here... */
-   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l2, v2 );
+   ret |= compute_error( "LU test Av=Mvd shiftinvert (dsdrv4)", &derr, &verr, n, nev, lambda, vec, l2, v2, 1e-8 );
+   /* QR */
+   eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_SM, EIGS_MODE_G_REGINVERSE, &eigs_drv_qr, NULL );
+   ret |= compute_error( "QR test Av=Mvd regular (dsdrv3)", &derr, &verr, n, nev, lambda, vec, l2, v2, 1e-5 );
+   eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_LM, EIGS_MODE_G_SHIFTINVERT, &eigs_drv_qr, NULL ); /* No idea why we have to use LM instead of SM here... */
+   ret |= compute_error( "QR test Av=Mvd shiftinvert (dsdrv4)", &derr, &verr, n, nev, lambda, vec, l2, v2, 1e-5 );
 
    /* Clean up. */
    free( lambda );
@@ -189,9 +203,9 @@ static int test_cholesky (void)
       -0.254721696675916931,  0.642476454309929612, -0.080823372416091277, -0.600264971072408837,  0.394322723000606445
    };
    eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_LM, EIGS_MODE_I_REGULAR, &eigs_drv_cholesky, NULL );
-   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l1, v1 );
+   ret |= compute_error( "Cholesky test Av=vd regular (dsdrv1)", &derr, &verr, n, nev, lambda, vec, l1, v1, 1e-8 );
    eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_SM, EIGS_MODE_I_SHIFTINVERT, &eigs_drv_cholesky, NULL ); /* No ide awhy we have to use SM instead of LM here... */
-   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l1, v1 );
+   ret |= compute_error( "Cholesky test Av=vd shiftinvert (dsdrv2)", &derr, &verr, n, nev, lambda, vec, l1, v1, 1e-8 );
 
    /* Now calculate Av = Mvd. */
    const double l2[] = {
@@ -205,9 +219,9 @@ static int test_cholesky (void)
       -0.739873616712546589, -0.372312748011245365, -0.190339145144644672, -0.103589190311946536, -0.068910978382554500
    };
    eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_SM, EIGS_MODE_G_REGINVERSE, &eigs_drv_cholesky, NULL );
-   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l2, v2 );
+   ret |= compute_error( "Cholesky test Av=Mvd regular (dsdrv3)", &derr, &verr, n, nev, lambda, vec, l2, v2, 1e-8 );
    eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_LM, EIGS_MODE_G_SHIFTINVERT, &eigs_drv_cholesky, NULL ); /* No idea why we have to use LM instead of SM here... */
-   ret |= compute_error( &derr, &verr, n, nev, lambda, vec, l2, v2 );
+   ret |= compute_error( "Cholesky test Av=Mvd shiftinvert (dsdrv4)", &derr, &verr, n, nev, lambda, vec, l2, v2, 1e-8 );
 
    /* Clean up. */
    free( lambda );
@@ -225,7 +239,7 @@ int main( int argc, char *argv[] )
    (void) argv;
    int ret = 0;
 
-   ret |= test_lu();
+   ret |= test_lu_qr();
    ret |= test_cholesky();
 
    if (ret)
