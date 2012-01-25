@@ -55,6 +55,9 @@ static int compute_error( double *derr, double *verr, int n, int nev,
 }
 
 
+/**
+ * @brief Tests the LU backend driver for symmetric matrices.
+ */
 static int test_lu (void)
 {
    int n, nev, i, j;
@@ -130,6 +133,9 @@ static int test_lu (void)
 }
 
 
+/**
+ * @brief Tests the cholesky backend driver for symmetric positive definite matrices.
+ */
 static int test_cholesky (void)
 {
    int n, nev, i;

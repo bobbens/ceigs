@@ -39,6 +39,8 @@
  * Where \f$A, M\f$ are sparse matrices, \f$v\f$ is the subset of
  * eigenvectors and \f$d\f$ is the diagonal matrix of eigenvalues.
  *
+ * Currently only symmetric real matrices are supported.
+ *
  *
  * @section Usage
  *
@@ -240,7 +242,7 @@ typedef struct EigsDriverGroup_s {
 /**
  * @brief Driver group using LU factorization.
  *
- * This driver is default.
+ * This driver is default and works for any type of matrix.
  */
 extern const EigsDriverGroup_t eigs_drv_lu; 
 /**
