@@ -108,8 +108,9 @@
  *    - Support for EIGS_MODE_I_SHIFTINVERT with default driver backend.
  *    - Support for EIGS_MODE_G_SHIFTINVERT with default driver backend.
  *    - Added number of Lanczos vectors to use as a parameter.
- *    - Added driver that uses LU factorization (default).
+ *    - Added driver that tries various factorization methods (default).
  *    - Added driver that uses Cholesky factorization.
+ *    - Added driver that uses LU factorization.
  *    - Added driver that uses QR factorization.
  * - Version 1.0, December 2011
  *    - Initial Revision.
@@ -241,18 +242,22 @@ typedef struct EigsDriverGroup_s {
 
 
 /**
- * @brief Driver group using LU factorization.
- *
- * This driver is default and works for any type of matrix.
- */
-extern const EigsDriverGroup_t eigs_drv_lu; 
-/**
  * @brief Driver group using Cholesky factorization.
+ *
+ * This driver will first attempt Cholesky factorization, then LU
+ * factorization and finally QR factorization if the previous fails.
+ * This driver is the default.
  *
  * @note For Cholesky factorization to work, the A matrix must be Hermitian and
  *       positive definite.
  */
 extern const EigsDriverGroup_t eigs_drv_cholesky;
+/**
+ * @brief Driver group using LU factorization.
+ *
+ * This driver is default and works for any type of matrix.
+ */
+extern const EigsDriverGroup_t eigs_drv_lu; 
 /**
  * @brief Driver group using QR factorization.
  *

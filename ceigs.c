@@ -82,7 +82,7 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
 
    /* Use default drivers if not found. */
    if (drvlist == NULL)
-      drvlist = &eigs_drv_lu;
+      drvlist = &eigs_drv_cholesky;
 
    /* Set number of Lanczos vectors to use. */
    ncv   = opts_use->ncv;
@@ -204,8 +204,14 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    }
 
    /* Initialize driver. */
-   if (drv->init != NULL)
+   if (drv->init != NULL) {
       drv_data = drv->init( n, data_A, data_M, opts_use );
+      if (drv_data == NULL) {
+         fprintf( stderr, "Driver failed to initialize.\n" );
+         ret = -1;
+         goto err;
+      }
+   }
 
    /* Main loop using ARPACK. */
    do {

@@ -1,6 +1,9 @@
 ceigs.o
+cs_fact.o
+ceigs_cs.o
 ceigs_lu.o
 ceigs_cholesky.o
+ceigs_qr.o
 libceigs.a
 libceigs.so
 libceigs.so.1.0
