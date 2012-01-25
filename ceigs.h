@@ -108,10 +108,9 @@
  *    - Support for EIGS_MODE_I_SHIFTINVERT with default driver backend.
  *    - Support for EIGS_MODE_G_SHIFTINVERT with default driver backend.
  *    - Added number of Lanczos vectors to use as a parameter.
- *    - Added driver that tries various factorization methods (default).
- *    - Added driver that uses Cholesky factorization.
- *    - Added driver that uses LU factorization.
- *    - Added driver that uses QR factorization.
+ *    - Added driver that tries Cholesky factorization, then LU and finally QR (default).
+ *    - Added driver that tries LU factorization then QR.
+ *    - Added driver that tries QR factorization.
  * - Version 1.0, December 2011
  *    - Initial Revision.
  *    - Support for EIGS_MODE_I_REGULAR with default driver backend.
