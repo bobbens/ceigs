@@ -1,6 +1,8 @@
-ceigs.a
 ceigs.o
-ceigs.so
-ceigs.so.1.0
+ceigs_lu.o
+ceigs_cholesky.o
+libceigs.a
+libceigs.so
+libceigs.so.1.0
 test
 test.o
