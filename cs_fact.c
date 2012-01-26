@@ -155,6 +155,7 @@ static int cs_fact_init_umfpack( cs_fact_t *umfd, const cs *A )
    else {
       umfd->A  = cs_transpose( A, 1 );
    }
+   cs_dupl( umfd->A );
 
    /* Generate symbolic. */
    ret = umfpack_di_symbolic( umfd->n, umfd->n, umfd->A->p, umfd->A->i, umfd->A->x, &symbolic, NULL, NULL );
@@ -176,7 +177,7 @@ static int cs_fact_init_umfpack( cs_fact_t *umfd, const cs *A )
    umfd->w  = malloc( umfd->n*5 * sizeof(double) ); /* We consider iteration refinement. */
    if (umfd->w == NULL)
       goto err_w;
-   umfd->x  = malloc( umfd->n * sizeof(double) );
+   umfd->x  = calloc( umfd->n, sizeof(double) );
    if (umfd->x == NULL)
       goto err_x;
 
@@ -318,12 +319,11 @@ void cs_fact_solve( double *b, cs_fact_t *fact )
          break;
       case CS_FACT_UMFPACK:
 #ifdef USE_UMFPACK
-         memcpy( fact->x, b, fact->n*sizeof(double) );
          ret = umfpack_di_wsolve( UMFPACK_A, /* Solving Ax=b problem. */
                fact->A->p, fact->A->i, fact->A->x,
                fact->x, b, fact->numeric, NULL, NULL, fact->wi, fact->w );
          if (ret == UMFPACK_WARNING_singular_matrix)
-            fprintf( stderr, "Matrix singular!\n" );
+            fprintf( stdout, "Matrix singular!\n" );
          memcpy( b, fact->x, fact->n*sizeof(double) );
 #endif /* USE_UMFPACK */
       default:

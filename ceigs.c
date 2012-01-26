@@ -82,7 +82,11 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
 
    /* Use default drivers if not found. */
    if (drvlist == NULL)
+#ifdef USE_UMFPACK
+      drvlist = &eigs_drv_umfpack;
+#else /* USE_UMFPACK */
       drvlist = &eigs_drv_cholesky;
+#endif /* USE_UMFPACK */
 
    /* Set number of Lanczos vectors to use. */
    ncv   = opts_use->ncv;
