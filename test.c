@@ -11,7 +11,7 @@
 #define POW2(x)      ((x)*(x))
 
 
-static int compute_error( const char *name,
+static int compute_error( const char *name, const char *str,
       double *derr, double *verr, int n, int nev,
       const double *d1, const double *v1,
       const double *d2, const double *v2, double tol )
@@ -32,7 +32,7 @@ static int compute_error( const char *name,
    *verr = v;
 
    if ((d > tol) || (v > tol))
-      fprintf( stderr, "%s failed!\n", name );
+      fprintf( stderr, "%s: %s failed!\n", name, str );
    if (d > tol) {
       fprintf( stderr, "Eigenvalues do not match (err=%.3e)!\n", d );
       fprintf( stderr, "   gt:  " );
@@ -62,7 +62,7 @@ static int compute_error( const char *name,
 /**
  * @brief Tests the LU backend driver for symmetric matrices.
  */
-static int test_asym( const EigsDriverGroup_t *drv, double tol )
+static int test_asym( const char *name, const EigsDriverGroup_t *drv, double tol )
 {
    int n, nev, i, j;
    double *lambda, *vec;
@@ -107,16 +107,16 @@ static int test_asym( const EigsDriverGroup_t *drv, double tol )
    };
    rret = eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_LM, EIGS_MODE_I_REGULAR, drv, NULL );
    if (rret != 0) {
-      fprintf( stderr, "Asym test Av=vd regular (dsdrv1) failed to run!\n" );
+      fprintf( stderr, "%s: Asym test Av=vd regular (dsdrv1) failed to run!\n", name );
       ret |= rret;
    }
-   ret |= compute_error( "Asym test Av=vd regular (dsdrv1)", &derr, &verr, n, nev, lambda, vec, l1, v1, tol );
+   ret |= compute_error( name, "Asym test Av=vd regular (dsdrv1)", &derr, &verr, n, nev, lambda, vec, l1, v1, tol );
    rret = eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_SM, EIGS_MODE_I_SHIFTINVERT, drv, NULL ); /* No ide awhy we have to use SM instead of LM here... */
    if (rret != 0) {
-      fprintf( stderr, "Asym test Av=vd shiftinvert (dsdrv2) failed to run!\n" );
+      fprintf( stderr, "%s: Asym test Av=vd shiftinvert (dsdrv2) failed to run!\n", name );
       ret |= rret;
    }
-   ret |= compute_error( "Asym test AV=vd shiftinvert (dsdrv2)", &derr, &verr, n, nev, lambda, vec, l1, v1, tol );
+   ret |= compute_error( name, "Asym test AV=vd shiftinvert (dsdrv2)", &derr, &verr, n, nev, lambda, vec, l1, v1, tol );
 
    /* Now calculate Av = Mvd. */
    const double l2[] = {
@@ -131,16 +131,16 @@ static int test_asym( const EigsDriverGroup_t *drv, double tol )
    };
    rret = eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_SM, EIGS_MODE_G_REGINVERSE, drv, NULL );
    if (rret != 0) {
-      fprintf( stderr, "Asym test Av=Mvd regular (dsdrv3) failed to run!\n" );
+      fprintf( stderr, "%s: Asym test Av=Mvd regular (dsdrv3) failed to run!\n", name );
       ret |= rret;
    }
-   ret |= compute_error( "Asym test Av=Mvd regular (dsdrv3)", &derr, &verr, n, nev, lambda, vec, l2, v2, tol );
+   ret |= compute_error( name, "Asym test Av=Mvd regular (dsdrv3)", &derr, &verr, n, nev, lambda, vec, l2, v2, tol );
    rret = eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_LM, EIGS_MODE_G_SHIFTINVERT, drv, NULL ); /* No idea why we have to use LM instead of SM here... */
    if (rret != 0) {
-      fprintf( stderr, "Asym test Av=Mvd shiftinvert (dsdrv4) failed to run!\n" );
+      fprintf( stderr, "%s: Asym test Av=Mvd shiftinvert (dsdrv4) failed to run!\n", name );
       ret |= rret;
    }
-   ret |= compute_error( "Asym test Av=Mvd shiftinvert (dsdrv4)", &derr, &verr, n, nev, lambda, vec, l2, v2, tol );
+   ret |= compute_error( name, "Asym test Av=Mvd shiftinvert (dsdrv4)", &derr, &verr, n, nev, lambda, vec, l2, v2, tol );
 
    /* Clean up. */
    free( lambda );
@@ -155,7 +155,7 @@ static int test_asym( const EigsDriverGroup_t *drv, double tol )
 /**
  * @brief Tests the cholesky backend driver for symmetric positive definite matrices.
  */
-static int test_sym( const EigsDriverGroup_t *drv, double tol )
+static int test_sym( const char *name, const EigsDriverGroup_t *drv, double tol )
 {
    int n, nev, i;
    double *lambda, *vec;
@@ -209,16 +209,16 @@ static int test_sym( const EigsDriverGroup_t *drv, double tol )
    };
    rret = eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_LM, EIGS_MODE_I_REGULAR, drv, NULL );
    if (rret != 0) {
-      fprintf( stderr, "Sym test Av=vd regular (dsdrv1) failed to run!\n" );
+      fprintf( stderr, "%s: Sym test Av=vd regular (dsdrv1) failed to run!\n", name );
       ret |= rret;
    }
-   ret |= compute_error( "Sym test Av=vd regular (dsdrv1)", &derr, &verr, n, nev, lambda, vec, l1, v1, tol );
+   ret |= compute_error( name, "Sym test Av=vd regular (dsdrv1)", &derr, &verr, n, nev, lambda, vec, l1, v1, tol );
    rret = eigs( n, nev, lambda, vec, A, NULL, EIGS_ORDER_SM, EIGS_MODE_I_SHIFTINVERT, drv, NULL ); /* No ide awhy we have to use SM instead of LM here... */
    if (rret != 0) {
-      fprintf( stderr, "Sym test Av=vd shiftinvert (dsdrv2) failed to run!\n" );
+      fprintf( stderr, "%s: Sym test Av=vd shiftinvert (dsdrv2) failed to run!\n", name );
       ret |= rret;
    }
-   ret |= compute_error( "Sym test Av=vd shiftinvert (dsdrv2)", &derr, &verr, n, nev, lambda, vec, l1, v1, tol );
+   ret |= compute_error( name, "Sym test Av=vd shiftinvert (dsdrv2)", &derr, &verr, n, nev, lambda, vec, l1, v1, tol );
 
    /* Now calculate Av = Mvd. */
    const double l2[] = {
@@ -233,16 +233,16 @@ static int test_sym( const EigsDriverGroup_t *drv, double tol )
    };
    rret = eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_SM, EIGS_MODE_G_REGINVERSE, drv, NULL );
    if (rret != 0) {
-      fprintf( stderr, "Sym test Av=Mvd regular (dsdrv3) failed to run!\n" );
+      fprintf( stderr, "%s: Sym test Av=Mvd regular (dsdrv3) failed to run!\n", name );
       ret |= rret;
    }
-   ret |= compute_error( "Sym Av=Mvd regular (dsdrv3)", &derr, &verr, n, nev, lambda, vec, l2, v2, tol );
+   ret |= compute_error( name, "Sym Av=Mvd regular (dsdrv3)", &derr, &verr, n, nev, lambda, vec, l2, v2, tol );
    rret = eigs( n, nev, lambda, vec, A, M, EIGS_ORDER_LM, EIGS_MODE_G_SHIFTINVERT, drv, NULL ); /* No idea why we have to use LM instead of SM here... */
    if (rret != 0) {
-      fprintf( stderr, "Sym test Av=Mvd shiftinvert (dsdrv4) failed to run!\n" );
+      fprintf( stderr, "%s: Sym test Av=Mvd shiftinvert (dsdrv4) failed to run!\n", name );
       ret |= rret;
    }
-   ret |= compute_error( "Sym Av=Mvd shiftinvert (dsdrv4)", &derr, &verr, n, nev, lambda, vec, l2, v2, tol );
+   ret |= compute_error( name, "Sym Av=Mvd shiftinvert (dsdrv4)", &derr, &verr, n, nev, lambda, vec, l2, v2, tol );
 
    /* Clean up. */
    free( lambda );
@@ -261,18 +261,18 @@ int main( int argc, char *argv[] )
    int ret = 0;
 
    /* Symmetrical matrix tests. */
-   ret |= test_sym( NULL, 1e-8 );
-   ret |= test_sym( &eigs_drv_cholesky, 1e-10 );
-   ret |= test_sym( &eigs_drv_lu, 1e-8 );
-   ret |= test_sym( &eigs_drv_qr, 1e-5 );
-   ret |= test_sym( &eigs_drv_umfpack, 1e-10 );
+   ret |= test_sym( "default",  NULL, 1e-8 );
+   ret |= test_sym( "cholesky", &eigs_drv_cholesky, 1e-10 );
+   ret |= test_sym( "lu",       &eigs_drv_lu, 1e-8 );
+   ret |= test_sym( "qr",       &eigs_drv_qr, 1e-5 );
+   ret |= test_sym( "umfpack",  &eigs_drv_umfpack, 1e-10 );
 
    /* Assymetrical matrix tests. */
-   ret |= test_asym( NULL, 1e-8 );
-   ret |= test_asym( &eigs_drv_cholesky, 1e-8 );
-   ret |= test_asym( &eigs_drv_lu, 1e-8 );
-   ret |= test_asym( &eigs_drv_qr, 1e-5 );
-   ret |= test_asym( &eigs_drv_umfpack, 1e-10 );
+   ret |= test_asym( "default",  NULL, 1e-8 );
+   ret |= test_asym( "cholesky", &eigs_drv_cholesky, 1e-8 );
+   ret |= test_asym( "lu",       &eigs_drv_lu, 1e-8 );
+   ret |= test_asym( "qr",       &eigs_drv_qr, 1e-5 );
+   ret |= test_asym( "umfpack",  &eigs_drv_umfpack, 1e-10 );
 
    if (ret)
       fprintf( stderr, "ceigs test failed!!\n" );
