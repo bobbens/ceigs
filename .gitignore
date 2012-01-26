@@ -5,7 +5,7 @@ ceigs_cs.o
 ceigs_cholesky.o
 ceigs_lu.o
 ceigs_qr.o
-ceigs-umfpack.o
+ceigs_umfpack.o
 libceigs.a
 libceigs.so
 libceigs.so.1.0
