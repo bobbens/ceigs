@@ -228,6 +228,8 @@ cs_fact_t* cs_fact_init_type( const cs *A, cs_fact_type_t type )
  */
 void cs_fact_free( cs_fact_t *fact )
 {
+   if (fact == NULL)
+      return;
    switch (fact->type) {
       case CS_FACT_NULL:
          break;
