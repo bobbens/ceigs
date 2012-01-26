@@ -3,12 +3,6 @@
 #include "ceigs.h"
 #include "ceigs_cs.h"
 
-#include <suitesparse/cs.h>
-
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-
 
 /* DSDRV2 */
 static void* eigs_dsdrv2_init_lu( int n, const void *data_A, const void *data_M,

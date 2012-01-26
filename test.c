@@ -2,7 +2,7 @@
 
 #include "ceigs.h"
 
-#include <suitesparse/cs.h>
+#include <cs.h>
 
 #include <math.h>
 #include <stdio.h>

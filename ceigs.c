@@ -3,7 +3,7 @@
 #include "ceigs.h"
 
 #define F77_NAME(x) x ## _
-#include <suitesparse/cs.h>
+#include <cs.h>
 
 #include <math.h>
 #include <stdio.h>

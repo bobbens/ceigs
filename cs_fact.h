@@ -5,7 +5,7 @@
 #  define _CS_FACT_H
 
 
-#include <suitesparse/cs.h>
+#include <cs.h>
 
 
 /**
@@ -15,7 +15,8 @@ typedef enum cs_fact_type_e {
    CS_FACT_NULL,     /**< No factorization. */
    CS_FACT_CHOLESKY, /**< Cholesky factorization. */
    CS_FACT_LU,       /**< LU factorization. */
-   CS_FACT_QR        /**< QR factorization. */
+   CS_FACT_QR,       /**< QR factorization. */
+   CS_FACT_UMFPACK   /**< Using UMFPACK library. */
 } cs_fact_type_t;
 
 

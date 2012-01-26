@@ -3,7 +3,7 @@
 #include "ceigs.h"
 #include "ceigs_cs.h"
 
-#include <suitesparse/cs.h>
+#include <cs.h>
 
 #include <math.h>
 #include <assert.h>
