@@ -256,14 +256,18 @@ int main( int argc, char *argv[] )
    ret |= test_sym( "cholesky", &eigs_drv_cholesky, 1e-10 );
    ret |= test_sym( "lu",       &eigs_drv_lu, 1e-8 );
    ret |= test_sym( "qr",       &eigs_drv_qr, 1e-5 );
+#ifdef USE_UMFPACK
    ret |= test_sym( "umfpack",  &eigs_drv_umfpack, 1e-10 );
+#endif /* USE_UMFPACK */
 
    /* Assymetrical matrix tests. */
    ret |= test_asym( "default",  NULL, 1e-8 );
    ret |= test_asym( "cholesky", &eigs_drv_cholesky, 1e-8 );
    ret |= test_asym( "lu",       &eigs_drv_lu, 1e-8 );
    ret |= test_asym( "qr",       &eigs_drv_qr, 1e-5 );
+#ifdef USE_UMFPACK
    ret |= test_asym( "umfpack",  &eigs_drv_umfpack, 1e-10 );
+#endif /* USE_UMFPACK */
 
    if (ret)
       fprintf( stderr, "ceigs test failed!!\n" );

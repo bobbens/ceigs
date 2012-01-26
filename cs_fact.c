@@ -2,7 +2,9 @@
 
 #include "cs_fact.h"
 
+#ifdef USE_UMFPACK
 #include <umfpack.h>
+#endif /* USE_UMFPACK */
 
 #include <math.h>
 #include <string.h>
@@ -19,11 +21,13 @@ struct cs_fact_s {
    css *S;              /**< Symoblic information. */
    csn *N;              /**< Factorization information.. */
    double *x;           /**< Workspace. */
+#ifdef USE_UMFPACK
    /* For UMFPACK routines. */
    cs *A;               /**< Matrix. */
    void *numeric;       /**< UMFPACK numeric information. */
    int *wi;             /**< First workspace. */
    double *w;           /**< Second workspace. */
+#endif /* USE_UMFPACK */
 };
 
 
@@ -135,6 +139,7 @@ err_S:
 
 static int cs_fact_init_umfpack( cs_fact_t *umfd, const cs *A )
 {
+#ifdef USE_UMFPACK
    int ret;
    void *symbolic;
    cs *T;
@@ -188,6 +193,11 @@ err_num:
 err_sym:
    cs_spfree( umfd->A );
    return -1;
+#else /* USE_UMFPACK */
+   (void) umfd;
+   (void) A;
+   return -1;
+#endif /* USE_UMFPACK */
 }
 
 
@@ -209,13 +219,18 @@ cs_fact_t* cs_fact_init_type( const cs *A, cs_fact_type_t type )
    /* Try in order Cholesky, LU and QR. */
    switch (type) {
       /* More advanced UMFPACK routines. */
+#ifdef USE_UMFPACK
       case CS_FACT_NULL:
+#endif /* USE_UMFPACK */
       case CS_FACT_UMFPACK:
          if (cs_fact_init_umfpack( fact, A )==0)
             return fact;
          break;
 
       /* Default CSPARSE routines. */
+#ifndef USE_UMFPACK
+      case CS_FACT_NULL:
+#endif /* USE_UMFPACK */
       case CS_FACT_CHOLESKY:
          if (cs_fact_init_cholesky( fact, A )==0)
             return fact;
@@ -254,11 +269,13 @@ void cs_fact_free( cs_fact_t *fact )
          cs_nfree( fact->N );
          break;
       case CS_FACT_UMFPACK:
+#ifdef USE_UMFPACK
          cs_spfree( fact->A );
          umfpack_di_free_numeric( &fact->numeric );
          free( fact->x );
          free( fact->wi );
          free( fact->w );
+#endif /* USE_UMFPACK */
          break;
    }
    free(     fact );
@@ -275,7 +292,10 @@ void cs_fact_free( cs_fact_t *fact )
  */
 void cs_fact_solve( double *b, cs_fact_t *fact )
 {
-   int ret, k;
+#ifdef USE_UMFPACK
+   int ret;
+#endif /* USE_UMFPACK */
+   int k;
    switch (fact->type) {
       case CS_FACT_CHOLESKY:
          cs_ipvec(   fact->S->pinv, b, fact->x, fact->n );
@@ -297,6 +317,7 @@ void cs_fact_solve( double *b, cs_fact_t *fact )
          cs_ipvec(  fact->S->q, fact->x, b, fact->n );
          break;
       case CS_FACT_UMFPACK:
+#ifdef USE_UMFPACK
          memcpy( fact->x, b, fact->n*sizeof(double) );
          ret = umfpack_di_wsolve( UMFPACK_A, /* Solving Ax=b problem. */
                fact->A->p, fact->A->i, fact->A->x,
@@ -304,6 +325,7 @@ void cs_fact_solve( double *b, cs_fact_t *fact )
          if (ret == UMFPACK_WARNING_singular_matrix)
             fprintf( stderr, "Matrix singular!\n" );
          memcpy( b, fact->x, fact->n*sizeof(double) );
+#endif /* USE_UMFPACK */
       default:
          break;
    }

@@ -27,6 +27,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  @endverbatim
  *
+ * Please note that if linked to UMFPACK this library becomes GPLv3+ licensed
+ * and not LGPLv3+ licensed.
  *
  * @section Overview
  *

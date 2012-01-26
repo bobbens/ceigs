@@ -5,10 +5,16 @@ PATH_INSTALL   := /usr/lib
 LIBNAME	:= libceigs
 VERSION	:= 1.1
 
+USE_UMFPACK := true
+
 CFLAGS   := -O3 -fPIC
 CFLAGS   += -W -Wall -Wextra -Wunused -Wshadow -Wpointer-arith -Wmissing-prototypes -Winline -Wcast-align -Wmissing-declarations -Wredundant-decls -Wno-long-long -Wcast-align
 CFLAGS   += -I/usr/include/suitesparse
-LDFLAGS	:= -larpack -lcxsparse -lumfpack
+LDFLAGS	:= -larpack -lcxsparse
+ifeq ($(USE_UMFPACK),true)
+CFLAGS	+= -DUSE_UMFPACK
+LDFLAGS  += -lumfpack
+endif
 
 OBJS		:= ceigs.o ceigs_cs.o cs_fact.o ceigs_lu.o ceigs_cholesky.o ceigs_qr.o ceigs_umfpack.o
 
