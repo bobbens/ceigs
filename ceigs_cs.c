@@ -10,51 +10,8 @@
 #include <string.h>
 
 
-/**
- * @brief Horrible little wrapper to conserve the original matrix.
- */
-typedef struct eigs_fact_s {
-   cs_fact_t *fact;  /**< Factorization. */
-   cs *A;            /**< Matrix if applicable. */
-} eigs_fact_t;
-
-
 /* Common .*/
 static int eigs_w_Av_cs( double *w, int n, const cs *A, const double *v );
-/* Facts. */
-static eigs_fact_t* eigs_fact_create( cs *A, cs_fact_type_t type );
-static void eigs_fact_destroy( eigs_fact_t *fact );
-
-
-/**
- * @brief Creates the horrible little wrapper.
- */
-static eigs_fact_t* eigs_fact_create( cs *A, cs_fact_type_t type )
-{
-   eigs_fact_t *fact = malloc( sizeof(eigs_fact_t) );
-   if (fact == NULL)
-      return NULL;
-   fact->fact = cs_fact_init_type( A, type );
-   if (fact->fact == NULL) {
-      free( fact );
-      return NULL;
-   }
-   fact->A    = A;
-   return fact;
-}
-
-
-/**
- * @brief Destroys the horrible little wrapper.
- */
-static void eigs_fact_destroy( eigs_fact_t *fact )
-{
-   if (fact == NULL)
-      return;
-   cs_fact_free( fact->fact );
-   cs_spfree(    fact->A );
-   free(         fact );
-}
 
 
 /**
@@ -99,45 +56,54 @@ void* eigs_dsdrv2_init_cs( int n, const void *data_A, const void *data_M,
    const cs *A = (const cs*) data_A;
    (void) data_M;
    cs *C, *B, *T;
-   int i;
-   eigs_fact_t *fact;
+   int i, f;
+   cs_fact_t *fact;
 
-   /* Create Temoporary B matrix. */
-   B = cs_spalloc( n, n, n, 1, 1 );
-   for (i=0; i<n; i++)
-      cs_entry( B, i, i, 1 );
-   T = B;
-   B = cs_compress( T );
-   cs_spfree( T );
+   if (opts->sigma == 0.) {
+      C = (cs*) A;
+      f = 0;
+   }
+   else {
+      /* Create Temoporary B matrix as the identity. */
+      B = cs_spalloc( n, n, n, 1, 1 );
+      for (i=0; i<n; i++)
+         cs_entry( B, i, i, 1 );
+      T = B;
+      B = cs_compress( T );
+      cs_spfree( T );
 
-   /* C = A - sigma B */
-   C = cs_add( A, B, 1.0, -opts->sigma );
-   cs_spfree( B );
+      /* C = A - sigma B */
+      C = cs_add( A, B, 1.0, -opts->sigma );
+      cs_spfree( B );
+      f = 1;
+   }
 
    /* Factorize C and keep factorization. */
-   fact = eigs_fact_create( C, type );
-   if (fact == NULL)
-      cs_spfree( C );
+   fact = cs_fact_init_type( C, type );
+
+   if (f)
+      cs_spfree(C);
+
    return fact;
 }
 void eigs_dsdrv2_free_cs( void* data, const EigsOpts_t *opts )
 {
    (void) opts;
-   eigs_fact_t *fact = (eigs_fact_t*) data;
-   eigs_fact_destroy( fact );
+   cs_fact_t *fact = (cs_fact_t*) data;
+   cs_fact_free( fact );
 }
 int eigs_dsdrv2_cs( int ido, int n, double *workd, const int *ipntr, const void *data_A, const void *data_M, void *extra )
 {
    (void) data_A;
    (void) data_M;
-   eigs_fact_t *fact = (eigs_fact_t*) extra;
+   cs_fact_t *fact = (cs_fact_t*) extra;
 
    /* Matrix vector multiplication ${\bf w}\leftarrow{\bf A}{\bf v}$.
     * The vector is in workd(ipntr(1)).
     * The result vector must be returned in the array workd(ipntr(2)). */
    if ((ido == -1) || (ido == 1)) {
       memcpy( &workd[ ipntr[1]-1 ], &workd[ ipntr[0]-1 ], n*sizeof(double) );
-      cs_fact_solve( &workd[ ipntr[1]-1 ], fact->fact );
+      cs_fact_solve( &workd[ ipntr[1]-1 ], fact );
    }
 
    return 0;
@@ -189,20 +155,28 @@ void* eigs_dsdrv4_init_cs( int n, const void *data_A, const void *data_M,
    const cs *M = (const cs*) data_M;
    (void) n;
    cs *C;
-   eigs_fact_t *fact;
+   int f;
+   cs_fact_t *fact;
 
    /* C = A - sigma M */
-   C   = cs_add( A, M, 1.0, -opts->sigma );
-   fact = eigs_fact_create( C, type ); /* Only care about factorization. */
-   if (fact == NULL)
-      cs_spfree( C );
+   if (opts->sigma == 0.0) {
+      C = (cs*) A;
+      f = 0;
+   }
+   else {
+      C = cs_add( A, M, 1.0, -opts->sigma );
+      f = 1;
+   }
+   fact = cs_fact_init_type( C, type ); /* Only care about factorization. */
+   if (f)
+      cs_spfree(C);
    return fact;
 }
 void eigs_dsdrv4_free_cs( void* data, const EigsOpts_t *opts )
 {
    (void) opts;
-   eigs_fact_t *fact = (eigs_fact_t*) data;
-   eigs_fact_destroy( fact );
+   cs_fact_t *fact = (cs_fact_t*) data;
+   cs_fact_free( fact );
 }
 /**
  * @brief Default driver for dsaupd_ using mode EIGS_MODE_G_SHIFTINVERT.
@@ -214,21 +188,21 @@ int eigs_dsdrv4_cs( int ido, int n, double *workd, const int *ipntr,
 {
    (void) data_A;
    const cs *M  = (const cs*) data_M;
-   eigs_fact_t *fact = (eigs_fact_t*) extra;
+   cs_fact_t *fact = (cs_fact_t*) extra;
 
    if (ido == -1) {
       /* y <-- inv[ A - sigma*M ] * M*x
        * input:  workd(ipntr(1))
        * output: workd(ipntr(2)) */
       eigs_w_Av_cs( &workd[ ipntr[1]-1 ], n, M, &workd[ ipntr[0]-1 ] );
-      cs_fact_solve( &workd[ ipntr[1]-1 ], fact->fact );
+      cs_fact_solve( &workd[ ipntr[1]-1 ], fact );
    }
    else if (ido == 1) {
       /* y <-- inv[ A - sigma*M ] * M*x
        * input:  M*x in workd(ipntr(3))
        * output: workd(ipntr(2)) */
       memcpy( &workd[ ipntr[1]-1 ], &workd[ ipntr[2]-1 ], n*sizeof(double) );
-      cs_fact_solve( &workd[ ipntr[1]-1 ], fact->fact );
+      cs_fact_solve( &workd[ ipntr[1]-1 ], fact );
    }
    else if (ido == 2) {
       /* y <-- M*x 

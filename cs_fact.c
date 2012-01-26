@@ -13,7 +13,6 @@
  */
 struct cs_fact_s {
    /* General information. */
-   const cs *A;         /**< Matrix. */
    int n;               /**< Dimension. */
    /* For CSPARSE routines. */
    cs_fact_type_t type; /**< Type of factorization used. */
@@ -21,6 +20,7 @@ struct cs_fact_s {
    csn *N;              /**< Factorization information.. */
    double *x;           /**< Workspace. */
    /* For UMFPACK routines. */
+   cs *A;               /**< Matrix. */
    void *numeric;       /**< UMFPACK numeric information. */
    int *wi;             /**< First workspace. */
    double *w;           /**< Second workspace. */
@@ -137,14 +137,27 @@ static int cs_fact_init_umfpack( cs_fact_t *umfd, const cs *A )
 {
    int ret;
    void *symbolic;
+   cs *T;
+
+   /* Create matrix and sort. */
+   /* Non-symmetric case. */
+   if (0) {
+      T        = cs_transpose( A, 1 );
+      umfd->A  = cs_transpose( T, 1 );
+      cs_spfree( T );
+   }
+   /* Symmetric case. */
+   else {
+      umfd->A  = cs_transpose( A, 1 );
+   }
 
    /* Generate symbolic. */
-   ret = umfpack_di_symbolic( umfd->n, umfd->n, A->p, A->i, A->x, &symbolic, NULL, NULL );
+   ret = umfpack_di_symbolic( umfd->n, umfd->n, umfd->A->p, umfd->A->i, umfd->A->x, &symbolic, NULL, NULL );
    if (ret != UMFPACK_OK)
       goto err_sym;
 
    /* Generate numeric. */
-   ret = umfpack_di_numeric(  A->p, A->i, A->x, symbolic, &umfd->numeric, NULL, NULL );
+   ret = umfpack_di_numeric(  umfd->A->p, umfd->A->i, umfd->A->x, symbolic, &umfd->numeric, NULL, NULL );
    if (ret != UMFPACK_OK)
       goto err_num;
 
@@ -173,6 +186,7 @@ err_wi:
 err_num:
    umfpack_di_free_symbolic( &symbolic );
 err_sym:
+   cs_spfree( umfd->A );
    return -1;
 }
 
@@ -190,13 +204,18 @@ cs_fact_t* cs_fact_init_type( const cs *A, cs_fact_type_t type )
    /* Set up. */
    fact        = malloc( sizeof(cs_fact_t) );
    fact->type  = CS_FACT_NULL;
-   fact->A     = A;
    fact->n     = A->n;
 
    /* Try in order Cholesky, LU and QR. */
    switch (type) {
-      /* Default CSPARSE routines. */
+      /* More advanced UMFPACK routines. */
       case CS_FACT_NULL:
+      case CS_FACT_UMFPACK:
+         if (cs_fact_init_umfpack( fact, A )==0)
+            return fact;
+         break;
+
+      /* Default CSPARSE routines. */
       case CS_FACT_CHOLESKY:
          if (cs_fact_init_cholesky( fact, A )==0)
             return fact;
@@ -205,12 +224,6 @@ cs_fact_t* cs_fact_init_type( const cs *A, cs_fact_type_t type )
             return fact;
       case CS_FACT_QR:
          if (cs_fact_init_qr( fact, A )==0)
-            return fact;
-         break;
-
-      /* More advanced UMFPACK routines. */
-      case CS_FACT_UMFPACK:
-         if (cs_fact_init_umfpack( fact, A )==0)
             return fact;
          break;
    }
@@ -241,6 +254,7 @@ void cs_fact_free( cs_fact_t *fact )
          cs_nfree( fact->N );
          break;
       case CS_FACT_UMFPACK:
+         cs_spfree( fact->A );
          umfpack_di_free_numeric( &fact->numeric );
          free( fact->x );
          free( fact->wi );
@@ -283,6 +297,7 @@ void cs_fact_solve( double *b, cs_fact_t *fact )
          cs_ipvec(  fact->S->q, fact->x, b, fact->n );
          break;
       case CS_FACT_UMFPACK:
+         memcpy( fact->x, b, fact->n*sizeof(double) );
          ret = umfpack_di_wsolve( UMFPACK_A, /* Solving Ax=b problem. */
                fact->A->p, fact->A->i, fact->A->x,
                fact->x, b, fact->numeric, NULL, NULL, fact->wi, fact->w );
