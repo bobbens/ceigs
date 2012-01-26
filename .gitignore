@@ -8,7 +8,7 @@ ceigs_qr.o
 ceigs_umfpack.o
 libceigs.a
 libceigs.so
-libceigs.so.1.0
+libceigs.so.1.1
 test
 test.o
 libceigs.pdf

@@ -3,7 +3,7 @@ PATH_INCLUDE   := /usr/include
 PATH_INSTALL   := /usr/lib
 
 LIBNAME	:= libceigs
-VERSION	:= 1.0
+VERSION	:= 1.1
 
 CFLAGS   := -O3 -fPIC
 CFLAGS   += -W -Wall -Wextra -Wunused -Wshadow -Wpointer-arith -Wmissing-prototypes -Winline -Wcast-align -Wmissing-declarations -Wredundant-decls -Wno-long-long -Wcast-align

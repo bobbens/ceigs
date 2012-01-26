@@ -5,8 +5,8 @@
 /**
  * @mainpage ceigs doxygen documentation
  * @author Edgar Simo-Serra <esimo@iri.upc.edu>
- * @version 1.0
- * @date December 2011
+ * @version 1.1
+ * @date January 2012
  *
  * @section License
  *
@@ -103,12 +103,13 @@
  *
  * @section Changelog
  *
- * - Version 1.1, (unreleased)
+ * - Version 1.1, January 2012
  *    - Invert the eigenvector/value order to match octave/matlab's eigs(...) function.
  *    - Support for EIGS_MODE_I_SHIFTINVERT with default driver backend.
  *    - Support for EIGS_MODE_G_SHIFTINVERT with default driver backend.
  *    - Added number of Lanczos vectors to use as a parameter.
- *    - Added driver that tries Cholesky factorization, then LU and finally QR (default).
+ *    - Added driver that uses UMFPACK backend (default).
+ *    - Added driver that tries Cholesky factorization, then LU and finally.
  *    - Added driver that tries LU factorization then QR.
  *    - Added driver that tries QR factorization.
  * - Version 1.0, December 2011
@@ -130,7 +131,7 @@
  */
 
 #define EIGS_VERSION_MAJOR   1 /**< Major version of the ceigs library. */
-#define EIGS_VERSION_MINOR   0 /**< Minor version of the ceigs library. */
+#define EIGS_VERSION_MINOR   1 /**< Minor version of the ceigs library. */
 
 /**
  * @brief Ordering to return eigenvalues as.

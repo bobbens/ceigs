@@ -30,6 +30,15 @@ Which will generate a pdf containing the full documentation in the directory.
 
 CHANGELOG
 
+- Version 1.1, January 2012
+   - Invert the eigenvector/value order to match octave/matlab's eigs(...) function.
+   - Support for EIGS_MODE_I_SHIFTINVERT with default driver backend.
+   - Support for EIGS_MODE_G_SHIFTINVERT with default driver backend.
+   - Added number of Lanczos vectors to use as a parameter.
+   - Added driver that uses UMFPACK backend (default).
+   - Added driver that tries Cholesky factorization, then LU and finally.
+   - Added driver that tries LU factorization then QR.
+   - Added driver that tries QR factorization.
 - Version 1.0, December 2011
    - Initial Revision.
    - Support for EIGS_MODE_I_REGULAR with default driver backend.
