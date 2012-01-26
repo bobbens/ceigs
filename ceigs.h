@@ -241,6 +241,12 @@ typedef struct EigsDriverGroup_s {
 
 
 /**
+ * @brief Driver group using the UMFPACK library.
+ *
+ * This is the most complete and powerful driver of them all.
+ */
+extern const EigsDriverGroup_t eigs_drv_umfpack;
+/**
  * @brief Driver group using Cholesky factorization.
  *
  * This driver will first attempt Cholesky factorization, then LU
