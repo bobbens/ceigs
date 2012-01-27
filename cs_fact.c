@@ -159,13 +159,26 @@ static int cs_fact_init_umfpack( cs_fact_t *umfd, const cs *A )
 
    /* Generate symbolic. */
    ret = umfpack_di_symbolic( umfd->n, umfd->n, umfd->A->p, umfd->A->i, umfd->A->x, &symbolic, NULL, NULL );
-   if (ret != UMFPACK_OK)
+   if (ret < UMFPACK_OK)
       goto err_sym;
 
    /* Generate numeric. */
    ret = umfpack_di_numeric(  umfd->A->p, umfd->A->i, umfd->A->x, symbolic, &umfd->numeric, NULL, NULL );
-   if (ret != UMFPACK_OK)
+   if (ret < UMFPACK_OK)
       goto err_num;
+   else if (ret > UMFPACK_OK) {
+      switch (ret) {
+         case UMFPACK_WARNING_singular_matrix:
+            fprintf( stderr, "UMFPACK: Matrix is singular.\n" );
+            break;
+         case UMFPACK_WARNING_determinant_underflow:
+            fprintf( stderr, "UMFPACK: Determinant underflow.\n" );
+            break;
+         case UMFPACK_WARNING_determinant_overflow:
+            fprintf( stderr, "UMFPACK: Determinant overflow.\n" );
+            break;
+      }
+   }
 
    /* Clean up symbolic. */
    umfpack_di_free_symbolic( &symbolic );
@@ -295,6 +308,7 @@ void cs_fact_solve( double *b, cs_fact_t *fact )
 {
 #ifdef USE_UMFPACK
    int ret;
+   double info[ UMFPACK_INFO ];
 #endif /* USE_UMFPACK */
    int k;
    switch (fact->type) {
@@ -321,9 +335,13 @@ void cs_fact_solve( double *b, cs_fact_t *fact )
 #ifdef USE_UMFPACK
          ret = umfpack_di_wsolve( UMFPACK_A, /* Solving Ax=b problem. */
                fact->A->p, fact->A->i, fact->A->x,
-               fact->x, b, fact->numeric, NULL, NULL, fact->wi, fact->w );
+               fact->x, b, fact->numeric, NULL, info, fact->wi, fact->w );
          if (ret == UMFPACK_WARNING_singular_matrix)
-            fprintf( stdout, "Matrix singular!\n" );
+            fprintf( stdout, "UMFPACK: wsolver Matrix singular!\n" );
+         for (k=0; k<fact->n; k++)
+            if (isnan(fact->x[k]) || isinf(fact->x[k]))
+               fact->x[k] = 0.;
+               //fprintf( stdout, "[%d] = NaN\n", k );
          memcpy( b, fact->x, fact->n*sizeof(double) );
 #endif /* USE_UMFPACK */
       default:
