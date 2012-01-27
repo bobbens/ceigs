@@ -10,7 +10,7 @@ USE_UMFPACK := true
 CFLAGS   := -O3 -fPIC
 CFLAGS   += -W -Wall -Wextra -Wunused -Wshadow -Wpointer-arith -Wmissing-prototypes -Winline -Wcast-align -Wmissing-declarations -Wredundant-decls -Wno-long-long -Wcast-align
 CFLAGS   += -I/usr/include/suitesparse
-LDFLAGS	:= -larpack -lcxsparse
+LDFLAGS	:= -lm -larpack -lcxsparse
 ifeq ($(USE_UMFPACK),true)
 CFLAGS	+= -DUSE_UMFPACK
 LDFLAGS  += -lumfpack
