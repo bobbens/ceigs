@@ -336,12 +336,12 @@ void cs_fact_solve( double *b, cs_fact_t *fact )
          ret = umfpack_di_wsolve( UMFPACK_A, /* Solving Ax=b problem. */
                fact->A->p, fact->A->i, fact->A->x,
                fact->x, b, fact->numeric, NULL, info, fact->wi, fact->w );
-         if (ret == UMFPACK_WARNING_singular_matrix)
+         if (ret == UMFPACK_WARNING_singular_matrix) {
             fprintf( stderr, "UMFPACK: wsolver Matrix singular!\n" );
-         for (k=0; k<fact->n; k++)
-            if (isnan(fact->x[k]) || isinf(fact->x[k]))
-               fact->x[k] = 0.;
-               //fprintf( stdout, "[%d] = NaN\n", k );
+            for (k=0; k<fact->n; k++)
+               if (isnan(fact->x[k]) || isinf(fact->x[k]))
+                  fact->x[k] = 0.;
+         }
          memcpy( b, fact->x, fact->n*sizeof(double) );
 #endif /* USE_UMFPACK */
       default:
