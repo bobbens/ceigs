@@ -220,7 +220,7 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    /* Main loop using ARPACK. */
    do {
       /* Reverse Communication Interface of ARPACK. */
-      dsaupd_( &ido, bmat, &n, which, &nev, &tol, resid, 
+      F77_NAME(dsaupd)( &ido, bmat, &n, which, &nev, &tol, resid, 
                &ncv, v, &ldv, iparam, ipntr, workd, workl,
                &lworkl, &info );
 
@@ -237,7 +237,7 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
       goto err;
    }
    else {
-      dseupd_( &rvec, "All", sel, d, v, &ldv, &sigma, bmat,
+      F77_NAME(dseupd)( &rvec, "All", sel, d, v, &ldv, &sigma, bmat,
                &n, which, &nev, &tol, resid, &ncv, v, &ldv,
                iparam, ipntr, workd, workl, &lworkl, &ierr );
 
