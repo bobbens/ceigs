@@ -35,8 +35,8 @@
  * This is a simple C frontend for ARPACK. This allows easy access to
  * calculating a subset of eigenvectors and eigenvalues of sparse matrices.
  * Specifically it can solve two problems:
- * - \f$Av = vd\f$
- * - \f$Av = Mvd\f$
+ * - \f$Av = dv\f$
+ * - \f$Av = dMv\f$
  *
  * Where \f$A, M\f$ are sparse matrices, \f$v\f$ is the subset of
  * eigenvectors and \f$d\f$ is the diagonal matrix of eigenvalues.
@@ -161,11 +161,11 @@ typedef enum EigsMode_e {
    /* For use in solving Av = vd */
    EIGS_MODE_I_REGULAR,     /**< For solving Av=vd in regular mode. */
    EIGS_MODE_I_SHIFTINVERT, /**< For solving Av=vd in shift-invert mode. */
-   /* For use in solving Av = Mvd */
-   EIGS_MODE_G_REGINVERSE,  /**< For solving Av=Mvd in regular inverse mode. */
-   EIGS_MODE_G_SHIFTINVERT, /**< For solving Av=Mvd in shift-invert mode. */
-   EIGS_MODE_G_BUCKLING,    /**< For solving Av=Mvd in Buckling mode. */
-   EIGS_MODE_G_CAYLEY,      /**< For solving Av=Mvd in Cayley mode. */
+   /* For use in solving Av = dMv */
+   EIGS_MODE_G_REGINVERSE,  /**< For solving Av=dMv in regular inverse mode. */
+   EIGS_MODE_G_SHIFTINVERT, /**< For solving Av=dMv in shift-invert mode. */
+   EIGS_MODE_G_BUCKLING,    /**< For solving Av=dMv in Buckling mode. */
+   EIGS_MODE_G_CAYLEY,      /**< For solving Av=dMv in Cayley mode. */
 } EigsMode_t;
 
 
