@@ -50,7 +50,7 @@ void eigs_optsDefault( EigsOpts_t *opts )
 {
    memset( opts, 0, sizeof(EigsOpts_t) );
 
-   opts->iters = 3000;
+   opts->iters = 300;
    opts->tol   = 0.0; /* Maximum computer precision. */
    opts->sigma = 0.0; /* Sigma shift value. */
    opts->ncv   = 0;   /* Autosets based on nev. */
