@@ -105,6 +105,9 @@
  *
  * @section Changelog
  *
+ * - Version 1.2, (unreleased)
+ *    - Changed default number of Lanczos vectors to a faster default.
+ *    - Tweaked ARPACK parameters to behave like MATLAB.
  * - Version 1.1, January 2012
  *    - Invert the eigenvector/value order to match octave/matlab's eigs(...) function.
  *    - Support for EIGS_MODE_I_SHIFTINVERT with default driver backend.
