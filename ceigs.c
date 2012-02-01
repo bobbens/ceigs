@@ -116,6 +116,8 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
                              machine precision */
    resid = malloc( n * sizeof(double) );
    assert( resid != NULL );
+   for (i=0; i<n; i++)
+      resid[ i ] = ((double)rand()) / ((double)RAND_MAX);
 
    ldv = n;
    v   = malloc( ldv*ncv * sizeof(double) );
@@ -124,7 +126,8 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    iparam[0] = 1;   /* Specifies the shift strategy (1->exact). */
    iparam[1] = 0;   /* Not referenced. */
    iparam[2] = opts_use->iters; /* Maximum number of iterations. */
-   iparam[3] = 1;   /* NB blocksize in recurrence. */
+   iparam[3] = 0;   /* NB blocksize in recurrence. */
+   //iparam[3] = 1;   /* NB blocksize in recurrence. */
    iparam[4] = 0;   /* nconv, number of Ritz values that satisfy covergence. */
    iparam[5] = 0;   /* Not referenced. */
    /* iparam[6] = 0; */ /* Set by driver. */
@@ -188,7 +191,7 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    assert( workd != NULL );
    assert( workl != NULL );
 
-   info   = 0; /* Passes convergence information out of the iteration
+   info   = 1; /* Passes convergence information out of the iteration
                   routine. */
 
    sel = malloc( ncv   * sizeof(int) );
