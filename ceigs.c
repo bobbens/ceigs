@@ -91,7 +91,7 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    /* Set number of Lanczos vectors to use. */
    ncv   = opts_use->ncv;
    if (ncv <= 0) {
-      ncv   = 4*nev; /* The largest number of basis vectors that will
+      ncv   = 2*nev; /* The largest number of basis vectors that will
                         be used in the Implicitly Restarted Arnoldi
                         Process.  Work per major iteration is
                         proportional to N*NCV*NCV. */
