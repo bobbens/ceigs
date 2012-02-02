@@ -36,10 +36,10 @@ help:
 
 $(LIBNAME): $(LIBNAME).a $(LIBNAME).so
 
-$(LIBNAME).a: $(OBJS)
+$(LIBNAME).a: $(OBJS) ceigs.h
 	$(AR) rcs $(LIBNAME).a $(OBJS)
 
-$(LIBNAME).so: $(OBJS)
+$(LIBNAME).so: $(OBJS) ceigs.h
 	$(CC) -shared -Wl,-soname,$(LIBNAME).so -o $(LIBNAME).so.$(VERSION) $(OBJS)
 	ln -sf $(LIBNAME).so.$(VERSION) $(LIBNAME).so
 
