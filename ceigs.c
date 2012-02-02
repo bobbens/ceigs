@@ -70,6 +70,7 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    const EigsOpts_t *opts_use;
    EigsOpts_t opts_default;
    const EigsDriver_t *drv;
+   const char *err;
    void *drv_data = NULL;
 
    /* Choose options to use. */
@@ -116,8 +117,6 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
                              machine precision */
    resid = malloc( n * sizeof(double) );
    assert( resid != NULL );
-   for (i=0; i<n; i++)
-      resid[ i ] = ((double)rand()) / ((double)RAND_MAX);
 
    ldv = n;
    v   = malloc( ldv*ncv * sizeof(double) );
@@ -126,8 +125,7 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    iparam[0] = 1;   /* Specifies the shift strategy (1->exact). */
    iparam[1] = 0;   /* Not referenced. */
    iparam[2] = opts_use->iters; /* Maximum number of iterations. */
-   iparam[3] = 0;   /* NB blocksize in recurrence. */
-   //iparam[3] = 1;   /* NB blocksize in recurrence. */
+   iparam[3] = 1;   /* NB blocksize in recurrence. ARPACK mentions only 1 is supported currently. */
    iparam[4] = 0;   /* nconv, number of Ritz values that satisfy covergence. */
    iparam[5] = 0;   /* Not referenced. */
    /* iparam[6] = 0; */ /* Set by driver. */
@@ -191,8 +189,9 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
    assert( workd != NULL );
    assert( workl != NULL );
 
-   info   = 1; /* Passes convergence information out of the iteration
-                  routine. */
+   info   = 0; /* Passes convergence information out of the iteration
+                  routine. If set to 1 uses resid as an initial estimate
+                  otherwise it gets initialized. */
 
    sel = malloc( ncv   * sizeof(int) );
    d   = malloc( 2*ncv * sizeof(double) ); /* This vector will return the eigenvalues from
@@ -232,41 +231,88 @@ int eigs( int n, int nev, double *lambda, double *vec, const void *data_A, const
 
    } while (ido != 99); /* Finish condition. */
 
-   /* From those results, the eigenvalues and vectors are
-      extracted. */
+   /* An error occurred. */
    if (info < 0) {
-      fprintf( stderr, "Error with dsaupd, info = %d\nCheck the documentation of dsaupd.\n\n", info );
+      switch (info) {
+         case -1:
+            err = "N must be positive.";
+            break;
+         case -2:
+            err = "NEV must be positive.";
+            break;
+         case -3:
+            err = "NCV must be greater than NEV and less than or equal to N.";
+            break;
+         case -4:
+            err = "The maximum number of Arnoldi update iterations allowed must be greater than zero.";
+            break;
+         case -5:
+            err = "WHICH must be one of 'LM', 'SM', 'LA', 'SA' or 'BE'.";
+            break;
+         case -6:
+            err = "BMAT must be one of 'I' or 'G'.";
+            break;
+         case -7:
+            err = "Length of private work array WORKL is not sufficient.";
+            break;
+         case -8:
+            err = "Error return from trid. eigenvalue calculation; Informational error from LAPACK routine dsteqr.";
+            break;
+         case -9:
+            err = "Starting vector is zero.";
+            break;
+         case -10:
+            err = "IPARAM(7) must be 1,2,3,4,5.";
+            break;
+         case -11:
+            err = "IPARAM(7) = 1 and BMAT = 'G' are incompatable.";
+            break;
+         case -12:
+            err = "IPARAM(1) must be equal to 0 or 1.";
+            break;
+         case -13:
+            err = "NEV and WHICH = 'BE' are incompatable.";
+            break;
+         case -9999:
+            err = "Could not build an Arnoldi factorization. IPARAM(5) returns the size of the current Arnoldi factorization. The user is advised to check that";
+            break;
+         default:
+            err = "Unknown error. Check the documentation of dsaupd.";
+            break;
+      }
+      fprintf( stderr, "Error with dsaupd, info = %d\n%s\n\n", info, err );
       ret = -1;
       goto err;
    }
-   else {
-      F77_NAME(dseupd)( &rvec, "All", sel, d, v, &ldv, &sigma, bmat,
-               &n, which, &nev, &tol, resid, &ncv, v, &ldv,
-               iparam, ipntr, workd, workl, &lworkl, &ierr );
 
-      if (ierr!=0) {
-         ret = -1;
-         fprintf( stderr, "Error with dseupd, info = %d\nCheck the documentation of dseupd.\n\n", info );
-         goto err;
-      }
-      else if (info==1)
-         printf( "Maximum number of iterations reached.\n\n" );
-      else if (info==3)
-         fprintf( stderr, "No shifts could be applied during implicit Arnoldi update, try increasing NCV.\n\n" );
+   /* From those results, the eigenvalues and vectors are
+      extracted. */
+   F77_NAME(dseupd)( &rvec, "All", sel, d, v, &ldv, &sigma, bmat,
+            &n, which, &nev, &tol, resid, &ncv, v, &ldv,
+            iparam, ipntr, workd, workl, &lworkl, &ierr );
 
-      /* Eigenvalues. */
+   if (ierr!=0) {
+      ret = -1;
+      fprintf( stderr, "Error with dseupd, info = %d\nCheck the documentation of dseupd.\n\n", info );
+      goto err;
+   }
+   else if (info==1)
+      fprintf( stderr, "Maximum number of iterations reached.\n\n" );
+   else if (info==3)
+      fprintf( stderr, "No shifts could be applied during implicit Arnoldi update, try increasing NCV.\n\n" );
+
+   /* Eigenvalues. */
+   for (i=0; i<nev; i++) {
+      k = nev-i-1;
+      lambda[i] = d[k];
+   }
+
+   /* Eigenvectors. */
+   if (rvec) {
       for (i=0; i<nev; i++) {
          k = nev-i-1;
-         lambda[i] = d[k];
-      }
-
-      /* Eigenvectors. */
-      if (rvec) {
-         for (i=0; i<nev; i++) {
-            k = nev-i-1;
-            for (j=0; j<n; j++)
-               vec[ i*n+j ] = v[ k*n + j ];
-         }
+         for (j=0; j<n; j++)
+            vec[ i*n+j ] = v[ k*n + j ];
       }
    }
 
