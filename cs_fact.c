@@ -309,6 +309,7 @@ void cs_fact_solve( double *b, cs_fact_t *fact )
 #ifdef USE_UMFPACK
    int ret;
    double info[ UMFPACK_INFO ];
+   int fnan, finf;
 #endif /* USE_UMFPACK */
    int k;
    switch (fact->type) {
@@ -338,9 +339,22 @@ void cs_fact_solve( double *b, cs_fact_t *fact )
                fact->x, b, fact->numeric, NULL, info, fact->wi, fact->w );
          if (ret == UMFPACK_WARNING_singular_matrix) {
             fprintf( stderr, "UMFPACK: wsolver Matrix singular!\n" );
-            for (k=0; k<fact->n; k++)
-               if (isnan(fact->x[k]) || isinf(fact->x[k]))
+            fnan = 0;
+            finf = 0;
+            for (k=0; k<fact->n; k++) {
+               if (isnan(fact->x[k])) {
                   fact->x[k] = 0.;
+                  fnan       = 1;
+               }
+               else if (isinf(fact->x[k])) {
+                  fact->x[k] = 0.;
+                  finf       = 1;
+               }
+            }
+            if (fnan)
+               fprintf( stderr, "UMFPACK: NaN values detected!\n" );
+            if (finf)
+               fprintf( stderr, "UMFPACK: Infinity values detected!\n" );
          }
          memcpy( b, fact->x, fact->n*sizeof(double) );
 #endif /* USE_UMFPACK */
