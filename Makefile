@@ -44,7 +44,7 @@ $(LIBNAME).so: $(OBJS) ceigs.h
 	ln -sf $(LIBNAME).so.$(VERSION) $(LIBNAME).so
 
 test: $(OBJS) test.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) test.o -o test
+	$(CC) $(CFLAGS) $(OBJS) test.o -o test $(LDFLAGS)
 	./test
 
 install: all
