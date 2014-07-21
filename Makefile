@@ -10,6 +10,7 @@ USE_UMFPACK := true
 CFLAGS   := -O3 -fPIC
 CFLAGS   += -W -Wall -Wextra -Wunused -Wshadow -Wpointer-arith -Wmissing-prototypes -Winline -Wcast-align -Wmissing-declarations -Wredundant-decls -Wno-long-long -Wcast-align
 CFLAGS   += -I/usr/include/suitesparse
+CFLAGS   += $(shell pkg-config --cflags arpack)
 LDFLAGS	:= -lm -lcxsparse
 LDFLAGS  += $(shell pkg-config --libs arpack)
 ifeq ($(USE_UMFPACK),true)
