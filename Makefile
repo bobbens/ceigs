@@ -15,7 +15,7 @@ LDFLAGS	:= -lm -lcxsparse
 LDFLAGS  += $(shell pkg-config --libs arpack)
 ifeq ($(USE_UMFPACK),true)
 CFLAGS	+= -DUSE_UMFPACK
-LDFLAGS  += -lumfpack
+LDFLAGS  += -lumfpack -lamd -lcholmod -lcolamd -lsuitesparseconfig
 endif
 
 OBJS		:= ceigs.o ceigs_cs.o cs_fact.o ceigs_lu.o ceigs_cholesky.o ceigs_qr.o ceigs_umfpack.o
