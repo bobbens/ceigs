@@ -27,6 +27,16 @@ Where A, M are sparse matrices, v is the subset of
 eigenvectors and d is the diagonal matrix of eigenvalues.
 
 
+DEPENDENCIES
+
+1) libsuitesparse (libsuitesparse-dev)
+2) libarpack (libarpack2-dev)
+
+On Ubuntu install the following with:
+
+# apt-get install libsuitesparse-dev libarpack2-dev
+
+
 INSTALLING
 
 To install run:
