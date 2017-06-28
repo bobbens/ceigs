@@ -248,9 +248,11 @@ cs_fact_t* cs_fact_init_type( const cs *A, cs_fact_type_t type )
       case CS_FACT_CHOLESKY:
          if (cs_fact_init_cholesky( fact, A )==0)
             return fact;
+         /* fallthrough */
       case CS_FACT_LU:
          if (cs_fact_init_lu( fact, A )==0)
             return fact;
+         /* fallthrough */
       case CS_FACT_QR:
          if (cs_fact_init_qr( fact, A )==0)
             return fact;
