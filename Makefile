@@ -10,9 +10,10 @@ USE_UMFPACK := true
 CFLAGS   := -O3 -fPIC
 CFLAGS   += -W -Wall -Wextra -Wunused -Wshadow -Wpointer-arith -Wmissing-prototypes -Winline -Wcast-align -Wmissing-declarations -Wredundant-decls -Wno-long-long -Wcast-align
 CFLAGS   += -I/usr/include/suitesparse
-CFLAGS   += $(shell pkg-config --cflags arpack)
+#CFLAGS   += $(shell pkg-config --cflags arpack)
 LDFLAGS	:= -lm -lcxsparse
-LDFLAGS  += $(shell pkg-config --libs arpack)
+#LDFLAGS  += $(shell pkg-config --libs arpack)
+LDFLAGS  += -larpack
 ifeq ($(USE_UMFPACK),true)
 CFLAGS	+= -DUSE_UMFPACK
 LDFLAGS  += -lumfpack -lamd -lcholmod -lcolamd -lsuitesparseconfig
